@@ -1,3 +1,9 @@
+# Log
+*.log
+*.txt
+*cache
+*.pc
+
 # Prerequisites
 *.d
 
@@ -30,3 +36,9 @@
 *.exe
 *.out
 *.app
+
+# third-party library
+include/*
+cpp-httplib/*
+build/*
+lib/*
