@@ -1,15 +1,17 @@
 /*
- * @Descripttion: 
+ * @Descripttion:
  * @version: 1.0.0
  * @Author: CYKS
  * @Date: 2021-11-29 18:26:38
  * @LastEditors: CYKS
- * @LastEditTime: 2021-11-29 21:37:53
+ * @LastEditTime: 2021-11-30 01:55:20
  */
-#include "./token.hpp"
+#pragma once
+
 #include <map>
+
+#include "token.hpp"
 
 using namespace std;
 
-class Parser {
-};
+class Parser {};

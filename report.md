@@ -6,11 +6,21 @@
 
 > 领域特定语言（Domain Specific Language，DSL）可以提供一种相对简单的文法，用于特定领域的业务流程定制。本作业要求定义一个领域特定脚本语言，这个语言能够描述在线客服机器人（机器人客服是目前提升客服效率的重要技术，在银行、通信和商务等领域的复杂信息系统中有广泛的应用）的自动应答逻辑，并设计实现一个解释器解释执行这个脚本，可以根据用户的不同输入，根据脚本的逻辑设计给出相应的应答。 
 
-​	本项目使用 ` C++ ` 语言实现一个在线客服机器人服务器，并且使用Python QQ机器人框架实现，使用户可以通过QQ与客服机器人进行人机交互。
+​	本项目使用 ` C++ 17 `  语言实现一个在线客服机器人服务器，并且使用Python QQ机器人框架实现，使用户可以通过QQ与客服机器人进行人机交互。
 
 
 
+## 项目管理
 
+​	本项目使用 `cmake 3.21` 进行管理，使用到的第三方库分别有 `jsonxx` ， `boost.asio` , `Boost` .
+
+​	单元测试使用 [google test](https://github.com/google/googletest/) 搭配 `cmake `目录进行管理 
+
+​	Code Style 可参考 C++ Google Code Style 和 [C++ Core Guidelines](https://github.com/isocpp/CppCoreGuidelines). 	
+
+​	在 `cmake` 中，可以通过 `add_subdirectory` 添加子项目目录， 此时 `cmake` 会同时链接子项目目录下的 `CMakeLists.txt`文件，从而实现树形的管理方法.
+
+​	
 
 ## DSL 定义 与  `VituralMachine` 操作定义
 
@@ -54,7 +64,6 @@ configure
 
 ```shell
 /main.u
-#include process
 
 loop true; do
 	input hello
@@ -64,8 +73,6 @@ loop true; do
 done
 
 /process.u
-#include refund
-#include question
 
 echo "hello, this is Umbrella Copration"
 echo 'please enter ":help" to get manual'
@@ -106,7 +113,7 @@ Parser的功能为解释设计的DSL语言，生成可执行代码，符号表�
 
 ### Web 
 
-​	实现了请求与响应`Mirai`服务器的功能，
+​	实现了请求与响应`Mirai`服务器的功能。使用 `boost.asio` 库实现，同时使用 `jsonxx` 库进行 `json` 的逆序列化。
 
 
 
@@ -114,7 +121,7 @@ Parser的功能为解释设计的DSL语言，生成可执行代码，符号表�
 
 ​	日志功能，该模块主要在 `CLI` 环境下交互，以及产生日志文件
 
-​	日志信息包括：`Paser` 的编译错误信息， `VirtualMachine` 的日志信息
+​	日志信息包括：`Paser` 的编译错误信息， `VirtualMachine` 的日志信息，使用了 `Boost` 的`log`组件实现.
 
 
 
