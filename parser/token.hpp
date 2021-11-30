@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 18:44:06
  * @LastEditors: CYKS
- * @LastEditTime: 2021-11-30 15:13:22
+ * @LastEditTime: 2021-11-30 15:55:54
  */
 #pragma once
 
@@ -30,6 +30,10 @@ enum struct reserved_token {
   DIV,
   SUB,
   MUL,
+  COMMA,
+
+  TRUE,
+  FALSE,
 };
 
 struct identifier {

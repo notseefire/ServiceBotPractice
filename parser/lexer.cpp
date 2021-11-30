@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 21:07:50
  * @LastEditors: CYKS
- * @LastEditTime: 2021-11-30 15:39:35
+ * @LastEditTime: 2021-11-30 15:56:20
  */
 
 #include "lexer.hpp"
@@ -49,6 +49,7 @@ Lexer::token_stream Lexer::lex_script(const fs::path &script_path) {
       _is_digit = isdigit(_ch);
       _is_operator = _it != _operator_table->end();
 
+      cout << _ch;
 
       while(lex_char(state, s));
       number++;
@@ -72,12 +73,10 @@ bool Lexer::lex_char (int &state, string &s) {
         if(_ch == '=') state = 2;
         else {
           _stream.push_back(Token((*_it).second, _line_num, _number));
-          state = 0;
-          return 1;
         }
       } else if (_ch == '#') {
         _comment_line = true;
-      } else if (_ch == ' ') {
+      } else if (_ch == ' ' || _ch == '\t') {
         
       }
       break;
@@ -93,10 +92,13 @@ bool Lexer::lex_char (int &state, string &s) {
           identifier id{_value: s};
           _stream.push_back(Token(id, _line_num, _cur_number));
         }
+        s.clear();
+        state = 0;
         return 1;
       }
       break;
     case 2:
+      state = 0;
       if(_ch == '=') {
         _stream.push_back(Token(reserved_token::EQUAL, _line_num, _cur_number));
       } else {
@@ -117,6 +119,7 @@ unique_ptr<Lexer::lookup_table> LookupTableFactory::get_operator_table() {
           {"*", reserved_token::MUL},
           {"-", reserved_token::SUB},
           {"+", reserved_token::ADD},
+          {",", reserved_token::COMMA},
       });
 
   return p;
@@ -134,6 +137,8 @@ unique_ptr<Lexer::lookup_table> LookupTableFactory::get_keyword_table() {
           {"do", reserved_token::DO},
           {"then", reserved_token::THEN},
           {"call", reserved_token::CALL},
+          {"true", reserved_token::TRUE},
+          {"false", reserved_token::FALSE},
       });
 
   return p;
