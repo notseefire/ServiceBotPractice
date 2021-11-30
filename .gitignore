@@ -37,8 +37,9 @@
 *.out
 *.app
 
-# third-party library
+# third-party library and build floder
 include/*
 cpp-httplib/*
 build/*
 lib/*
+.vscode/*
