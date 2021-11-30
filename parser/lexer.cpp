@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 21:07:50
  * @LastEditors: CYKS
- * @LastEditTime: 2021-11-30 15:56:20
+ * @LastEditTime: 2021-11-30 16:29:17
  */
 
 #include "lexer.hpp"
@@ -42,54 +42,64 @@ Lexer::token_stream Lexer::lex_script(const fs::path &script_path) {
   size_t line_num = 0, number = 0, cur_number = 0;
   while (getline(in, line)) {
     for (auto p = line.begin(); p != line.end(); p++) {
-      if(_comment_line) continue;
+      if (_comment_line) continue;
       _ch = *p;
       _it = _operator_table->find(string(1, _ch));
       _is_alpha = isalpha(_ch);
       _is_digit = isdigit(_ch);
       _is_operator = _it != _operator_table->end();
 
-      cout << _ch;
-
-      while(lex_char(state, s));
+      while (lex_char(state, s))
+        ;
       number++;
     }
     _comment_line = false;
     _line_num++;
   }
+
+  for (auto p = _stream.begin(); p != _stream.end(); p++) {
+    if (p->is_string()) {
+      cout << p->get_string() << " ";
+    }
+    if (p->is_identifier()) {
+      cout << p->get_id()._value << " ";
+    }
+    if (p->is_reserved_token()) {
+      cout << (int)p->get_token() << " ";
+    }
+  }
   return _stream;
 }
 
-bool Lexer::lex_char (int &state, string &s) {
-  switch(state) {
+bool Lexer::lex_char(int &state, string &s) {
+  switch (state) {
     case 0:
-      if(_is_alpha) {
+      if (_is_alpha) {
         s.push_back(_ch);
         _cur_number = _number;
         state = 1;
       } else if (_is_digit) {
-
       } else if (_is_operator) {
-        if(_ch == '=') state = 2;
+        if (_ch == '=')
+          state = 2;
         else {
           _stream.push_back(Token((*_it).second, _line_num, _number));
         }
       } else if (_ch == '#') {
         _comment_line = true;
       } else if (_ch == ' ' || _ch == '\t') {
-        
       }
       break;
     case 1:
       if (_is_alpha || _is_digit || _ch == '_') {
         s.push_back(_ch);
       } else {
-        lookup_table::iterator k_it =  _keyword_table->find(s);
-        if(k_it != _keyword_table->end()) {
+        lookup_table::iterator k_it = _keyword_table->find(s);
+        if (k_it != _keyword_table->end()) {
           reserved_token token = (*k_it).second;
           _stream.push_back(Token(token, _line_num, _cur_number));
         } else {
-          identifier id{_value: s};
+          identifier id{_value : s};
           _stream.push_back(Token(id, _line_num, _cur_number));
         }
         s.clear();
@@ -99,10 +109,11 @@ bool Lexer::lex_char (int &state, string &s) {
       break;
     case 2:
       state = 0;
-      if(_ch == '=') {
+      if (_ch == '=') {
         _stream.push_back(Token(reserved_token::EQUAL, _line_num, _cur_number));
       } else {
-        _stream.push_back(Token(reserved_token::ASSIGN, _line_num, _cur_number));
+        _stream.push_back(
+            Token(reserved_token::ASSIGN, _line_num, _cur_number));
         return 1;
       }
       break;
@@ -119,7 +130,7 @@ unique_ptr<Lexer::lookup_table> LookupTableFactory::get_operator_table() {
           {"*", reserved_token::MUL},
           {"-", reserved_token::SUB},
           {"+", reserved_token::ADD},
-          {",", reserved_token::COMMA},
+          {";", reserved_token::COMMA},
       });
 
   return p;
@@ -131,12 +142,14 @@ unique_ptr<Lexer::lookup_table> LookupTableFactory::get_keyword_table() {
           {"if", reserved_token::IF},
           {"fi", reserved_token::FI},
           {"echo", reserved_token::ECHO},
+          {"input", reserved_token::INPUT},
           {"elif", reserved_token::ELIF},
           {"else", reserved_token::ELSE},
           {"done", reserved_token::DONE},
           {"do", reserved_token::DO},
           {"then", reserved_token::THEN},
           {"call", reserved_token::CALL},
+          {"loop", reserved_token::LOOP},
           {"true", reserved_token::TRUE},
           {"false", reserved_token::FALSE},
       });

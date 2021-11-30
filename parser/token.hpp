@@ -4,25 +4,28 @@
  * @Author: CYKS
  * @Date: 2021-11-29 18:44:06
  * @LastEditors: CYKS
- * @LastEditTime: 2021-11-30 15:55:54
+ * @LastEditTime: 2021-11-30 16:28:54
  */
 #pragma once
 
+#include <optional>
 #include <string>
 #include <variant>
 
 using namespace std;
 
 enum struct reserved_token {
-  IF,
+  IF = 0,
   FI,
   ECHO,
+  INPUT,
   ELIF,
   ELSE,
   DONE,
   DO,
   THEN,
   CALL,
+  LOOP,
 
   EQUAL,
   ASSIGN,
@@ -55,7 +58,7 @@ class Token {
   bool is_string();
   bool is_reserved_token();
   bool is_identifier();
-  string get_string();
-  identifier get_id();
-  reserved_token get_token();
+  string get_string() const;
+  identifier get_id() const;
+  reserved_token get_token() const;
 };
