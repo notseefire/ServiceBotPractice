@@ -19,6 +19,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/cpp-httplib)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/parser)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/googletest)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/web)
 
 message("${httplib_FOUND}")
 
@@ -41,15 +42,22 @@ if (Boost_FOUND)
     target_link_libraries(${BINARY}_run PRIVATE
         ${Boost_LIBRARIES}
         httplib
-        Parser)
+        Parser
+        Web)
+
     target_include_directories(${BINARY}_run PRIVATE 
         ${CMAKE_CURRENT_SOURCE_DIR}/cpp-httplib
-        ${CMAKE_CURRENT_SOURCE_DIR}/parser)
+        ${CMAKE_CURRENT_SOURCE_DIR}/parser
+        ${CMAKE_CURRENT_SOURCE_DIR}/web)
+
     target_link_libraries(${BINARY}_lib PRIVATE
         ${Boost_LIBRARIES}
         httplib
-        Parser)
+        Parser
+        Web)
+
     target_include_directories(${BINARY}_lib PRIVATE 
         ${CMAKE_CURRENT_SOURCE_DIR}/cpp-httplib
-        ${CMAKE_CURRENT_SOURCE_DIR}/parser)
+        ${CMAKE_CURRENT_SOURCE_DIR}/parser
+        ${CMAKE_CURRENT_SOURCE_DIR}/web)
 endif()
