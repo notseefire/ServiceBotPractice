@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-01 22:41:56
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-05 10:03:39
+ * @LastEditTime: 2021-12-05 10:52:49
  */
 
 #pragma once
@@ -27,6 +27,5 @@ class Parallel {
  private:
     QMessageQueue* _queue;
     qq_id _id;
-    httplib::Client _cli;
     std::thread _thread;
 };

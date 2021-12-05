@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-04 17:45:25
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-05 10:08:50
+ * @LastEditTime: 2021-12-05 10:58:35
  */
 
 #include <iostream>
@@ -16,8 +16,9 @@
 using namespace jsonxx;
 
 MainServer::MainServer() {
-  std::cout << "begin";
 }
+
+httplib::Client MainServer::cli = httplib::Client("http://127.0.0.1:5700");
 
 void MainServer::run() {
   httplib::Server server;
@@ -53,9 +54,10 @@ void MainServer::run() {
   server.listen("127.0.0.1", 5701);
 }
 void MainServer::create_qq_thread(qq_id id) {
-    std::lock_guard<std::mutex> l(thread_pool_mutex);
     auto queue = new QMessageQueue();
     _mqueue[id] = queue;
 
-    thread_pool.insert(std::make_pair(id, Parallel(queue, id)));
+    auto thread = new Parallel(queue, id);
+
+    thread_pool.insert(std::make_pair(id, thread));
 }
