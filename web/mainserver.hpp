@@ -1,5 +1,5 @@
 /*
- * @Descripttion: 
+ * @Descripttion:
  * @version: 1.0.0
  * @Author: CYKS
  * @Date: 2021-12-04 17:45:19
@@ -18,7 +18,7 @@
 #include "parallel.hpp"
 #include "qq_type.hpp"
 
-class MainServer{
+class MainServer {
  public:
   inline static std::map<qq_id, Parallel*> thread_pool;
   inline static std::mutex thread_pool_mutex;
@@ -27,6 +27,7 @@ class MainServer{
   MainServer();
   void run();
   void create_qq_thread(qq_id id);
+
  private:
   std::map<qq_id, QMessageQueue*> _mqueue;
 };

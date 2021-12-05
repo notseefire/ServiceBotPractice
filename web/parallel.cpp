@@ -1,33 +1,30 @@
 /*
- * @Descripttion: 
+ * @Descripttion:
  * @version: 1.0.0
  * @Author: CYKS
  * @Date: 2021-12-04 20:14:40
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-05 11:01:21
+ * @LastEditTime: 2021-12-05 15:21:03
  */
+#include "parallel.hpp"
+
 #include <mutex>
 
-#include "mainserver.hpp"
-#include "parallel.hpp"
 #include "../cpp-httplib/httplib.h"
+#include "mainserver.hpp"
 
-
-Parallel::Parallel(QMessageQueue* queue, qq_id id) : _queue(queue),
-    _id(id), _thread(&Parallel::run, this) {
-    _thread.detach();
+Parallel::Parallel(QMessageQueue* queue, qq_id id)
+    : _queue(queue), _id(id), _thread(&Parallel::run, this) {
+  _thread.detach();
 }
 
-QMessage Parallel::wait_data() {
-    auto l = _queue->wait_data();
-    return _queue->pop();
-}
+QMessage Parallel::wait_data() { return _queue->pop(); }
 
 void Parallel::quit() {
-    std::cerr << "quit " << _id << std::endl;
-    std::lock_guard<std::mutex> l(MainServer::thread_pool_mutex);    
-    delete _queue;
-    MainServer::thread_pool.erase(_id);
+  std::cerr << "quit " << _id << std::endl;
+  std::lock_guard<std::mutex> l(MainServer::thread_pool_mutex);
+  delete _queue;
+  MainServer::thread_pool.erase(_id);
 }
 
 void Parallel::send_private_msg(std::string msg) {
@@ -41,11 +38,19 @@ void Parallel::send_private_msg(std::string msg) {
   } catch (std::exception& e) {
     std::cerr << e.what() << std::endl;
   }
-  std::cerr << "Output private msg" << std::endl;
 }
 
 void Parallel::run() {
-    std::cerr << "running" << std::endl;
-    send_private_msg("猫猫");
-    quit();
+  while (true) {
+    auto msg = wait_data();
+    auto msg_inner = msg.get_inner();
+    std::cerr << msg_inner << std::endl;
+    if (msg_inner == "exit") {
+      send_private_msg("退出");
+      break;
+    } else {
+      send_private_msg(msg.get_inner());
+    }
+  }
+  quit();
 }
