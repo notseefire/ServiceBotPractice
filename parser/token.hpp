@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 18:44:06
  * @LastEditors: CYKS
- * @LastEditTime: 2021-11-30 16:28:54
+ * @LastEditTime: 2021-12-11 14:21:32
  */
 #pragma once
 
@@ -15,28 +15,16 @@
 using namespace std;
 
 enum struct reserved_token {
-  IF = 0,
-  FI,
-  ECHO,
+  ECHO = 0,
   INPUT,
-  ELIF,
-  ELSE,
-  DONE,
-  DO,
-  THEN,
   CALL,
-  LOOP,
+  BREAK,
+  PROCEDURE,
+  EXIT,
 
-  EQUAL,
   ASSIGN,
   ADD,
-  DIV,
-  SUB,
-  MUL,
-  COMMA,
-
-  TRUE,
-  FALSE,
+  COLON,
 };
 
 struct identifier {

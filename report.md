@@ -39,25 +39,11 @@
 ```shell
 #include [script] 预处理，表示程序需要引用到
 
-echo [string] 回复消息
-set [id] = [value] 设置变量名及变量值
-input [id] 等待用户输入消息，并将消息内容储存在变量中 
-call [script] 调用另外一份脚本文件 script
-
-条件分支语句
-if [condition]; then
-	[code]
-elif [condition]; then
-	[code]
-else then
-	[code]
-fi
-
-loop condition; do 循环体开始
-done 循环体结束
-break 结束循环
-configure 
-
+echo [expression] 回复消息
+set {id} = [string] 设置变量名及变量值
+input {id}等待用户输入消息，并将消息内容储存在变量中 
+call [id] {string} {script} 调用另外一份脚本文件 script
+break 结束当前所在脚本的执行
 ```
 
 使用这套`DSL` 实现U公司的需求可以使用以下脚本
@@ -65,32 +51,6 @@ configure
 ```shell
 /main.u
 
-loop true; do
-	input hello
-    if hello == "开始"; then
-    	call process
-    fi
-done
-
-/process.u
-
-echo "hello, this is Umbrella Copration"
-echo 'please enter ":help" to get manual'
-
-loop true; do
-    input command
-    if command == ":help" then
-        echo '输入"退款" 开始退款流程\n \
-        输入"询问" 开始询问流程\n \
-        输入"退出" 可退出服务'
-    elif command == "退款"
-        call refund
-    elif command == "询问"
-        call question
-    else
-        echo "您输入的命令有误，请输入:help查看帮助"
-    fi
-done
 ```
 
 ## 顶层设计
@@ -135,7 +95,13 @@ Parser的功能为解释设计的DSL语言，生成可执行代码，符号表�
 
 ### Parser
 
-​	根据之前设计的Notation，接下来要利用已有的Compiler Principle的知识，设计解释器。首先是Token的设计，我们可以将 Token 分为
+​	根据之前设计的Notation，接下来要利用已有的Compiler Principle的知识，设计解释器。首先是Token的设计，我们可以将 Token 分为`string` ，`identifier`, `reserved_token`。
+
+#### Reserved_token
+
+​	`reserved_token` 表示Parser保留的关键字，可以通过在 `lookup_table` 中查询得到
+
+​	`lookup_table` 的类型是 `map<string, reserved_token>` ，在
 
 
 
@@ -163,5 +129,7 @@ Parser的功能为解释设计的DSL语言，生成可执行代码，符号表�
 
 #### Modern C++ Mutex
 
-为了实现线程间的同步与通信，我们需要使用 C++ 提供的 `std::mutex` 和条件变量
+为了实现线程间的同步与通信，我们需要使用 C++ 提供的 `std::mutex` 和条件变量。
+
+并以此来实现一个thread-safe的消息队列
 

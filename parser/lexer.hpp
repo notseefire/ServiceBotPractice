@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 21:07:58
  * @LastEditors: CYKS
- * @LastEditTime: 2021-11-30 16:50:19
+ * @LastEditTime: 2021-12-05 17:41:10
  */
 
 #pragma once
@@ -28,6 +28,8 @@ class Lexer {
   map<string, token_stream> lex(ScriptManager &manager);
 
  private:
+  char transfer();
+
   unique_ptr<lookup_table> _keyword_table, _operator_table;
   map<string, token_stream> _token_table;
   char _ch;

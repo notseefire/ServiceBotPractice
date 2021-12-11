@@ -1,22 +1,16 @@
+# #
 ###
  # @Descripttion: 
  # @version: 1.0.0
  # @Author: CYKS
- # @Date: 2021-11-29 21:52:03
+ # @Date: 2021-12-05 15:22:21
  # @LastEditors: CYKS
- # @LastEditTime: 2021-12-01 22:28:56
-###
+ # @LastEditTime: 2021-12-11 14:17:35
+### 
 
-echo 
-loop true; do
-    input command
-    if command ==  then
-        echo 
-    elif command == 
-        call refund
-    elif command == 
-        call question
-    else
-        echo 
-    fi
-done
+proc begin:
+set a = "狗狗"
+echo "猫猫  阿巴\n"
+input a
+call a "猫猫" begin
+break
