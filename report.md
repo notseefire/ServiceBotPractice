@@ -40,9 +40,9 @@
 #include [script] 预处理，表示程序需要引用到
 
 echo [expression] 回复消息
-set {id} = [string] 设置变量名及变量值
+set {id} [= string] 设置变量名及变量值
 input {id}等待用户输入消息，并将消息内容储存在变量中 
-call [id] {string} {script} 调用另外一份脚本文件 script
+call [id] {string} {proc} 调用另外一份脚本文件 script
 break 结束当前所在脚本的执行
 ```
 

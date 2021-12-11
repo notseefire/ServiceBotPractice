@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 21:07:50
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-11 14:21:50
+ * @LastEditTime: 2021-12-11 15:58:38
  */
 
 #include "lexer.hpp"
@@ -25,7 +25,7 @@ Lexer::Lexer(unique_ptr<lookup_table> &keyword_table,
 map<string, Lexer::token_stream> Lexer::lex(ScriptManager &manager) {
   for (auto t = manager.begin(); t != manager.end(); t++) {
     Lexer::token_stream stream = lex_script((*t).second);
-    _token_table[static_cast<string>((*t).second)] = stream;
+    _token_table[(*t).first] = stream;
   }
   return _token_table;
 }
@@ -172,6 +172,7 @@ unique_ptr<Lexer::lookup_table> LookupTableFactory::get_keyword_table() {
           {"break", reserved_token::BREAK},
           {"proc", reserved_token::PROCEDURE},
           {"exit", reserved_token::EXIT},
+          {"set", reserved_token::SET},
       });
 
   return p;

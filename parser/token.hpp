@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 18:44:06
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-11 14:21:32
+ * @LastEditTime: 2021-12-11 15:58:22
  */
 #pragma once
 
@@ -21,6 +21,7 @@ enum struct reserved_token {
   BREAK,
   PROCEDURE,
   EXIT,
+  SET,
 
   ASSIGN,
   ADD,
