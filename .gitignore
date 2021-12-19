@@ -1,6 +1,7 @@
 # Log
 *.log
 *.txt
+!CMakeLists.txt
 *cache
 *.pc
 
