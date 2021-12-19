@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 21:07:58
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-11 14:34:21
+ * @LastEditTime: 2021-12-16 18:26:51
  */
 
 #pragma once
@@ -42,7 +42,7 @@ class Lexer {
   token_stream _stream;
 
   token_stream lex_script(const fs::path &script_path);
-  bool lex_char(int& state, string &s);
+  bool lex_char(int &state, string &s);
 };
 
 class LookupTableFactory {

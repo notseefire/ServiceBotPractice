@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 21:07:50
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-11 15:58:38
+ * @LastEditTime: 2021-12-19 10:54:12
  */
 
 #include "lexer.hpp"
@@ -42,7 +42,6 @@ Lexer::token_stream Lexer::lex_script(const fs::path &script_path) {
   size_t line_num = 0, number = 0, cur_number = 0;
   while (getline(in, line)) {
     line.push_back('\n');
-    cout << line;
     for (auto p = line.begin(); p != line.end(); p++) {
       if (_comment_line) continue;
       _ch = *p;
@@ -57,6 +56,7 @@ Lexer::token_stream Lexer::lex_script(const fs::path &script_path) {
     }
     _comment_line = false;
     _line_num++;
+    /*
     for (auto p = _stream.begin(); p != _stream.end(); p++) {
       if (p->is_string()) {
         cout << p->get_string() << " ";
@@ -69,13 +69,14 @@ Lexer::token_stream Lexer::lex_script(const fs::path &script_path) {
       }
     }
     std::cout << std::endl;
-    _stream.clear();
+    */
+    s.clear();
   }
 
   return _stream;
 }
 char Lexer::transfer() {
-  if(_ch == 'n') {
+  if (_ch == 'n') {
     return '\n';
   } else {
     return _ch;
