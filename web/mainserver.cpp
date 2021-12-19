@@ -4,26 +4,26 @@
  * @Author: CYKS
  * @Date: 2021-12-04 17:45:25
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-05 13:24:55
+ * @LastEditTime: 2021-12-19 20:40:22
  */
 
 #include "mainserver.hpp"
 
 #include <iostream>
-
+#include <boost/log/trivial.hpp>
 #include "../cpp-httplib/httplib.h"
 #include "../lib/jsonxx/jsonxx.h"
 
 using namespace jsonxx;
 
-MainServer::MainServer() {}
+MainServer::MainServer(statments_table table): _table(table) {}
 
 httplib::Client MainServer::cli = httplib::Client("http://127.0.0.1:5700");
 
 void MainServer::run() {
   httplib::Server server;
 
-  std::cout << "run!";
+  BOOST_LOG_TRIVIAL(info) << "run server in http://127.0.0.1:5700";
 
   server.Post("/", [&](const httplib::Request &rep, httplib::Response &res) {
     Object o, user;
@@ -49,13 +49,20 @@ void MainServer::run() {
     queue->push(QMessage(message));
   });
 
+  server.Get("/stop", [&](const httplib::Request &rep, httplib::Response &res) {
+    BOOST_LOG_TRIVIAL(info) << "get a stop message";
+    cli.Get("/stop");
+    server.stop();
+  });
+
   server.listen("127.0.0.1", 5701);
 }
 void MainServer::create_qq_thread(qq_id id) {
   auto queue = new QMessageQueue();
   _mqueue[id] = queue;
 
-  auto thread = new Parallel(queue, id);
+  Runtime* runtime = new Runtime(&_table);
+  auto thread = new Parallel(queue, id, &_table, runtime);
 
   thread_pool.insert(std::make_pair(id, thread));
 }

@@ -30,13 +30,13 @@ Parser::token_table Parser::parser(map<string, Lexer::token_stream> table) {
       if (cur->is_reserved_token() &&
           cur->get_token() == reserved_token::PROCEDURE) {
         end = cur;
-        new_table.insert(std::make_pair(name, Block(name, begin, cur)));
+        new_table.insert(std::make_pair(name, Block(name, begin, cur)._stmts));
         BOOST_LOG_TRIVIAL(info) << "detect and adding procedure " << name;
         name = find_proc(cur, stream_end);
         begin = cur;
       }
     }
-    new_table.insert(std::make_pair(name, Block(name, begin, stream_end)));
+    new_table.insert(std::make_pair(name, Block(name, begin, stream_end)._stmts));
   }
   return std::move(new_table);
 }

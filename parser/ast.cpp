@@ -4,37 +4,20 @@
  * @Author: CYKS
  * @Date: 2021-12-11 14:43:02
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-19 11:46:06
+ * @LastEditTime: 2021-12-19 20:57:49
  */
 
-
-#include <string>
-#include <boost/log/trivial.hpp>
 #include "ast.hpp"
+
+#include <boost/log/trivial.hpp>
+#include <string>
+
+#include "../web/statment.hpp"
 #include "token.hpp"
 
 using namespace std;
-
-Set::Set(string id, string init) : _id(id), _init(init) {
-  BOOST_LOG_TRIVIAL(trace) << "set("<<id<<", " << init << ")";
-}
-
-Branch::Branch(string id, string value, string proc_id)
-    : _id(id), _value(value), _proc_id(proc_id) {
-  BOOST_LOG_TRIVIAL(trace) << "branch("<<id<<", " << value << ", " << proc_id << ")";
-}
-
-Input::Input(string id) : _id(id) {
-  BOOST_LOG_TRIVIAL(trace) << "input("<<id <<")";
-}
-
-Print::Print(string value) : _value(value) {
-  BOOST_LOG_TRIVIAL(trace) << "print("<<value <<")";
-}
-
-
-shared_ptr<Set> Block::find_set(Lexer::token_stream::iterator &begin,
-                                Lexer::token_stream::iterator &end) {
+Set *Block::find_set(Lexer::token_stream::iterator &begin,
+                     Lexer::token_stream::iterator &end) {
   string id;
   string init;
   if (!begin->is_identifier()) {
@@ -45,11 +28,11 @@ shared_ptr<Set> Block::find_set(Lexer::token_stream::iterator &begin,
   begin++;
 
   if (begin == end) {
-    return make_shared<Set>(Set(id, init));
+    return new Set(id, init);
   }
   if (!(begin->is_reserved_token() &&
         begin->get_token() == reserved_token::ASSIGN)) {
-    return make_shared<Set>(Set(id, init));
+    return new Set(id, init);
   }
 
   begin++;
@@ -64,11 +47,11 @@ shared_ptr<Set> Block::find_set(Lexer::token_stream::iterator &begin,
   init = begin->get_string();
   begin++;
 
-  return make_shared<Set>(Set(id, init));
+  return new Set(id, init);
 }
 
-shared_ptr<Branch> Block::find_branch(Lexer::token_stream::iterator &begin,
-                                      Lexer::token_stream::iterator &end) {
+Branch *Block::find_branch(Lexer::token_stream::iterator &begin,
+                           Lexer::token_stream::iterator &end) {
   string id;
   string condition;
   string procedure;
@@ -97,11 +80,11 @@ shared_ptr<Branch> Block::find_branch(Lexer::token_stream::iterator &begin,
   procedure = begin->get_id()._value;
   begin++;
 
-  return make_shared<Branch>(Branch(id, condition, procedure));
+  return new Branch(id, condition, procedure);
 }
 
-shared_ptr<Input> Block::find_input(Lexer::token_stream::iterator &begin,
-                             Lexer::token_stream::iterator &end) {
+Input *Block::find_input(Lexer::token_stream::iterator &begin,
+                         Lexer::token_stream::iterator &end) {
   string id;
   if (begin == end) {
     throw "expect identifer";
@@ -113,11 +96,11 @@ shared_ptr<Input> Block::find_input(Lexer::token_stream::iterator &begin,
 
   id = begin->get_id()._value;
   begin++;
-  return make_shared<Input>(Input(id));
+  return new Input(id);
 }
 
-shared_ptr<Print> Block::find_print(Lexer::token_stream::iterator &begin,
-                           Lexer::token_stream::iterator &end) {
+Print *Block::find_print(Lexer::token_stream::iterator &begin,
+                         Lexer::token_stream::iterator &end) {
   string value;
   if (begin == end || !begin->is_string()) {
     throw "expect string value";
@@ -126,7 +109,7 @@ shared_ptr<Print> Block::find_print(Lexer::token_stream::iterator &begin,
   value = begin->get_string();
   begin++;
 
-  return make_shared<Print>(Print(value));
+  return new Print(value);
 }
 
 Block::Block(std::string name, Lexer::token_stream::iterator begin,
@@ -154,7 +137,7 @@ Block::Block(std::string name, Lexer::token_stream::iterator begin,
 
       case reserved_token::BREAK:
         begin++;
-        _stmts.push_back(make_shared<Break>(Break()));
+        _stmts.push_back(new Break());
 
         BOOST_LOG_TRIVIAL(trace) << "adding a break segment";
 
@@ -175,7 +158,7 @@ Block::Block(std::string name, Lexer::token_stream::iterator begin,
         break;
 
       default:
-        std::cout << (int) token<< std::endl;
+        std::cout << (int)token << std::endl;
         throw "unexpected token";
     }
   }
