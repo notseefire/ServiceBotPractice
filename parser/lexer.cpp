@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 21:07:50
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-19 10:54:12
+ * @LastEditTime: 2021-12-20 15:53:03
  */
 
 #include "lexer.hpp"
@@ -18,9 +18,12 @@
 using namespace std;
 
 Lexer::Lexer(unique_ptr<lookup_table> &keyword_table,
-             unique_ptr<lookup_table> &operator_table)
+             unique_ptr<lookup_table> &operator_table,
+             logging::trivial::severity_level level)
     : _keyword_table(move(keyword_table)),
-      _operator_table(move(operator_table)) {}
+      _operator_table(move(operator_table)) {
+  logging::core::get()->set_filter(logging::trivial::severity >= level);
+}
 
 map<string, Lexer::token_stream> Lexer::lex(ScriptManager &manager) {
   for (auto t = manager.begin(); t != manager.end(); t++) {
@@ -49,9 +52,12 @@ Lexer::token_stream Lexer::lex_script(const fs::path &script_path) {
       _is_alpha = (_ch >= 'a' && _ch <= 'z') || (_ch >= 'A' && _ch <= 'Z');
       _is_digit = isdigit(_ch);
       _is_operator = _it != _operator_table->end();
-
-      while (lex_char(state, s))
-        ;
+      try {
+        while (lex_char(state, s)) continue;
+      } catch (const char *str) {
+        state = 0;
+        _error_queue.push_back(str);
+      }
       number++;
     }
     _comment_line = false;
@@ -100,6 +106,7 @@ bool Lexer::lex_char(int &state, string &s) {
       } else if (_ch == '\'') {
         state = 5;
       } else if (_ch == ' ' || _ch == '\t' || _ch == '\n') {
+      } else {
       }
       break;
     case 1:
@@ -174,6 +181,7 @@ unique_ptr<Lexer::lookup_table> LookupTableFactory::get_keyword_table() {
           {"proc", reserved_token::PROCEDURE},
           {"exit", reserved_token::EXIT},
           {"set", reserved_token::SET},
+          {"assign", reserved_token::CHANGE},
       });
 
   return p;

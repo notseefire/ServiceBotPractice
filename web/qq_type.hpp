@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-04 17:58:04
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 01:21:10
+ * @LastEditTime: 2021-12-20 13:54:47
  */
 
 #pragma once
@@ -13,9 +13,11 @@
 #include <memory>
 #include <mutex>
 #include <queue>
+#include <string>
+#include <optional>
 
-using qq_id = long long int;
-using qq_pid = short;
+using qq_id = int64_t;
+using qq_pid = int16_t;
 
 /**
  * @brief a capsule for message from qq, but i don't have idea about how to
@@ -27,7 +29,7 @@ class QMessage {
   std::string _inner;
 
  public:
-  QMessage(std::string& inner);
+  explicit QMessage(std::string& inner);
   std::string get_inner();
 };
 
@@ -52,11 +54,12 @@ class QMessageQueue {
    * 
    * @return QMessage 
    */
-  QMessage pop();
+  std::optional<QMessage> pop(int micro_seconds);
+
+  std::unique_lock<std::mutex> get_lock();
 
  private:
-  std::unique_lock<std::mutex> get_lock();
-  std::unique_lock<std::mutex> wait_data();
+  std::unique_lock<std::mutex> wait_data(int micro_seconds);
 
   /**
    * @brief  mutex for `_containner`
@@ -68,7 +71,6 @@ class QMessageQueue {
    * @brief condition variabel for `_ready`
    * 
    */
-  std::condition_variable _condition;
   std::queue<QMessage> _container;
   bool _ready;
 };

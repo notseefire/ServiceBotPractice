@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-11 14:43:02
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-19 20:57:49
+ * @LastEditTime: 2021-12-20 15:53:00
  */
 
 #include "ast.hpp"
@@ -17,7 +17,7 @@
 
 using namespace std;
 Set *Block::find_set(Lexer::token_stream::iterator &begin,
-                     Lexer::token_stream::iterator &end) {
+                     const Lexer::token_stream::iterator &end) const {
   string id;
   string init;
   if (!begin->is_identifier()) {
@@ -51,11 +51,11 @@ Set *Block::find_set(Lexer::token_stream::iterator &begin,
 }
 
 Branch *Block::find_branch(Lexer::token_stream::iterator &begin,
-                           Lexer::token_stream::iterator &end) {
+                           const Lexer::token_stream::iterator &end) const {
   string id;
   string condition;
   string procedure;
-  if (end - begin < 3) {
+  if (end - begin < 4) {
     throw "unexpected call operation";
   }
 
@@ -64,6 +64,13 @@ Branch *Block::find_branch(Lexer::token_stream::iterator &begin,
   }
 
   id = begin->get_id()._value;
+  begin++;
+
+  if (!begin->is_reserved_token() ||
+      begin->get_token() != reserved_token::ASSIGN) {
+    throw "expect assign operator in branch";
+  }
+
   begin++;
 
   if (!begin->is_string()) {
@@ -84,7 +91,7 @@ Branch *Block::find_branch(Lexer::token_stream::iterator &begin,
 }
 
 Input *Block::find_input(Lexer::token_stream::iterator &begin,
-                         Lexer::token_stream::iterator &end) {
+                         const Lexer::token_stream::iterator &end) const {
   string id;
   if (begin == end) {
     throw "expect identifer";
@@ -100,16 +107,54 @@ Input *Block::find_input(Lexer::token_stream::iterator &begin,
 }
 
 Print *Block::find_print(Lexer::token_stream::iterator &begin,
-                         Lexer::token_stream::iterator &end) {
+                         const Lexer::token_stream::iterator &end) const {
+  string id;
   string value;
-  if (begin == end || !begin->is_string()) {
+  if (begin == end || !(begin->is_string() || begin->is_identifier())) {
+    throw "expect string value";
+  }
+
+  if (begin->is_identifier()) {
+    id = begin->get_id()._value;
+  } else {
+    value = begin->get_string();
+  }
+  begin++;
+
+  return new Print(id, value);
+}
+
+Assign *Block::find_assign(Lexer::token_stream::iterator &begin,
+                           const Lexer::token_stream::iterator &end) const {
+  string id;
+  string value;
+  if (!begin->is_identifier()) {
+    throw "expected identifier";
+  }
+
+  id = begin->get_id()._value;
+  begin++;
+
+  if (begin == end) {
+    throw "expect assign operator";
+  }
+  if (!begin->is_reserved_token() ||
+      begin->get_token() != reserved_token::ASSIGN) {
+    throw "expect assign operator";
+  }
+
+  begin++;
+
+  if (begin == end) {
+    throw "expect init value";
+  }
+  if (!(begin->is_string())) {
     throw "expect string value";
   }
 
   value = begin->get_string();
   begin++;
-
-  return new Print(value);
+  return new Assign(id, value);
 }
 
 Block::Block(std::string name, Lexer::token_stream::iterator begin,
@@ -157,8 +202,15 @@ Block::Block(std::string name, Lexer::token_stream::iterator begin,
 
         break;
 
+      case reserved_token::CHANGE:
+        begin++;
+        _stmts.push_back(find_assign(begin, end));
+        BOOST_LOG_TRIVIAL(trace) << "adding a input segment";
+
+        break;
+
       default:
-        std::cout << (int)token << std::endl;
+        std::cout << static_cast<int>(token) << std::endl;
         throw "unexpected token";
     }
   }

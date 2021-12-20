@@ -4,19 +4,25 @@
  * @Author: CYKS
  * @Date: 2021-11-29 21:07:58
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 00:50:06
+ * @LastEditTime: 2021-12-20 15:53:06
  */
 
 #pragma once
 
+#include <boost/format.hpp>
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/trivial.hpp>
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "script.hpp"
 #include "token.hpp"
 
 using namespace std;
+namespace logging = boost::log;
 
 class Lexer {
  public:
@@ -25,34 +31,35 @@ class Lexer {
 
   /**
    * @brief Construct a new Lexer object
-   * 
+   *
    * @param keyword_table  lookup_table for keyword
    * @param operator_table  lookup_table for operator
    */
   Lexer(unique_ptr<lookup_table> &keyword_table,
-        unique_ptr<lookup_table> &operator_table);
+        unique_ptr<lookup_table> &operator_table,
+        logging::trivial::severity_level level);
 
   /**
-   * @brief lex through script manager, analyze all script and generate token stream
-   * one by one
-   * 
+   * @brief lex through script manager, analyze all script and generate token
+   * stream one by one
+   *
    * @param manager a `_container` to script file path
    * @return map<string, token_stream>  map from script name to token_stream
    */
   map<string, token_stream> lex(ScriptManager &manager);
 
  private:
-
- /**
-  * @brief find escape character, such as n, it will return \\n
-  * as a result
-  * 
-  * @return char found escape character.
-  */
+  /**
+   * @brief find escape character, such as n, it will return \\n
+   * as a result
+   *
+   * @return char found escape character.
+   */
   char transfer();
 
   unique_ptr<lookup_table> _keyword_table, _operator_table;
   map<string, token_stream> _token_table;
+  vector<const char *> _error_queue;
   char _ch;
   lookup_table::iterator _it;
   bool _is_alpha;
@@ -63,19 +70,23 @@ class Lexer {
   token_stream _stream;
 
   /**
-   * @brief Analysis script into token stream, it deal with only one script one time.
-   * 
+   * @brief Analysis script into token stream, it deal with only one script one
+   * time.
+   *
    * @param script_path one script file path
    * @return token_stream
    */
   token_stream lex_script(const fs::path &script_path);
 
   /**
-   * @brief Lexer automation, call the function will change the state in automation
-   * 
+   * @brief Lexer automation, call the function will change the state in
+   * automation
+   *
    * @param state current state
-   * @param s string with one character, it deal with string more effectively and easy.
-   * @return true lexer should continue its analysis instead of receive next one character.
+   * @param s string with one character, it deal with string more effectively
+   * and easy.
+   * @return true lexer should continue its analysis instead of receive next one
+   * character.
    */
   bool lex_char(int &state, string &s);
 };

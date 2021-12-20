@@ -4,12 +4,17 @@
  * @Author: CYKS
  * @Date: 2021-12-04 18:36:20
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-05 13:25:56
+ * @LastEditTime: 2021-12-20 13:55:31
  */
+
+#include <string>
+#include <utility>
+#include <mutex>
+#include <optional>
+#include <thread>
 
 #include "qq_type.hpp"
 
-#include <mutex>
 
 QMessage::QMessage(std::string& inner) : _inner(inner) {}
 
@@ -22,9 +27,15 @@ std::unique_lock<std::mutex> QMessageQueue::get_lock() {
   return std::move(head_lock);
 }
 
-std::unique_lock<std::mutex> QMessageQueue::wait_data() {
+std::unique_lock<std::mutex> QMessageQueue::wait_data(int micro_seconds) {
   std::unique_lock<std::mutex> head_lock(_mutex);
-  _condition.wait(head_lock, [&] { return _ready; });
+  int count = 0;
+  while(!_ready && count < micro_seconds) {
+    head_lock.unlock();
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
+    count += 100;
+    head_lock.lock();
+  }
   return std::move(head_lock);
 }
 
@@ -34,12 +45,14 @@ void QMessageQueue::push(QMessage msg) {
   if (_ready == false) {
     _ready = true;
     l.unlock();
-    _condition.notify_one();
   }
 }
 
-QMessage QMessageQueue::pop() {
-  auto l = wait_data();
+std::optional<QMessage> QMessageQueue::pop(int micro_seconds) {
+  auto l = wait_data(micro_seconds);
+  if(_ready == false) {
+    return std::nullopt;
+  }
   QMessage msg = _container.front();
   _container.pop();
   if (_container.empty()) {

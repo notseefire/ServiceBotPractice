@@ -4,13 +4,14 @@
  * @Author: CYKS
  * @Date: 2021-11-29 19:15:41
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 00:13:19
+ * @LastEditTime: 2021-12-20 15:53:16
  */
 #pragma once
 
 #include <experimental/filesystem>
 #include <iostream>
 #include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -18,10 +19,10 @@ namespace fs = std::experimental::filesystem;
 using namespace std;
 
 /**
- * @brief 
+ * @brief
  * manager search every script file under directory into `_container`.
  * visit script with iterator interface
- * 
+ *
  */
 class ScriptManager {
  public:
@@ -29,10 +30,10 @@ class ScriptManager {
 
   /**
    * @brief Construct a new Script Manager object with path.
-   * 
+   *
    * @param path a file system path to directory
    */
-  ScriptManager(fs::path path) : _path(path) {
+  explicit ScriptManager(fs::path path) : _path(path) {
     if (!fs::is_directory(path)) {
       throw "Path is not direcotry";
     }

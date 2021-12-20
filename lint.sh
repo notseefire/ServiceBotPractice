@@ -4,7 +4,7 @@
  # @Author: CYKS
  # @Date: 2021-11-30 01:10:09
  # @LastEditors: CYKS
- # @LastEditTime: 2021-12-19 23:58:44
+ # @LastEditTime: 2021-12-20 09:58:57
 ### 
 #!/bin/bash
 
@@ -14,8 +14,8 @@ else
 	mkdir lint_logd
 fi
 
-for dir in parser log test web; do
+for dir in parser test web; do
 	for file in ./${dir}/*.cpp ./${dir}/*.hpp; do
-		cpplint ${file} >> ./lint_logd/${dir}.log 2>&1
+		cpplint --filter=-legal/copyright,-runtime/references,-build/namespaces,-build/include_order ${file} >> ./lint_logd/${dir}.log 2>&1
 	done	
 done

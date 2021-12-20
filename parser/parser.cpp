@@ -4,13 +4,16 @@
  * @Author: CYKS
  * @Date: 2021-11-29 18:26:51
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-19 11:52:49
+ * @LastEditTime: 2021-12-20 15:53:07
  */
 
-#include <stdexcept>
-#include <boost/log/trivial.hpp>
-
 #include "parser.hpp"
+
+#include <boost/log/trivial.hpp>
+#include <stdexcept>
+#include <string>
+#include <utility>
+
 #include "ast.hpp"
 
 Parser::token_table Parser::parser(map<string, Lexer::token_stream> table) {
@@ -19,7 +22,7 @@ Parser::token_table Parser::parser(map<string, Lexer::token_stream> table) {
     Lexer::token_stream stream = (*index).second;
     Lexer::token_stream::iterator begin, end, stream_end = stream.end();
     auto cur = stream.begin();
-    if(cur == stream_end) {
+    if (cur == stream_end) {
       BOOST_LOG_TRIVIAL(warning) << (*index).first << " is blank, skip";
       continue;
     }
@@ -36,7 +39,8 @@ Parser::token_table Parser::parser(map<string, Lexer::token_stream> table) {
         begin = cur;
       }
     }
-    new_table.insert(std::make_pair(name, Block(name, begin, stream_end)._stmts));
+    new_table.insert(
+        std::make_pair(name, Block(name, begin, stream_end)._stmts));
   }
   return std::move(new_table);
 }
@@ -59,7 +63,8 @@ string Parser::find_proc(Lexer::token_stream::iterator &cur,
   auto id = cur->get_id();
   cur++;
 
-  if (cur == end || !(cur->is_reserved_token() && cur->get_token() == reserved_token::COLON)) {
+  if (cur == end || !(cur->is_reserved_token() &&
+                      cur->get_token() == reserved_token::COLON)) {
     throw "expect ':' after declare a proc";
   }
 

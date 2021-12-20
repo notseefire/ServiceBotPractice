@@ -4,12 +4,13 @@
  * @Author: CYKS
  * @Date: 2021-11-29 18:44:06
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 00:08:58
+ * @LastEditTime: 2021-12-20 15:53:21
  */
 #pragma once
 
 #include <optional>
 #include <string>
+#include <utility>
 #include <variant>
 
 using namespace std;
@@ -17,7 +18,7 @@ using namespace std;
 /**
  * @brief keyword and operator appear in script. The type help
  * parser divide code segment and generate AST.
- * 
+ *
  */
 enum struct reserved_token {
   ECHO = 0,
@@ -27,17 +28,17 @@ enum struct reserved_token {
   PROCEDURE,
   EXIT,
   SET,
+  CHANGE,
 
   ASSIGN,
   ADD,
   COLON,
 };
 
-
 /**
  * @brief identifer type describe variable concept in script, just capsule
  * string inner to tell from normal std::string
- * 
+ *
  */
 struct identifier {
   string _value;
@@ -46,9 +47,9 @@ struct identifier {
 /**
  * @brief a type describe Token, its inner is token_value, which consist of
  * modern C++ variant template with `string`, `reserved_token`, `identifer`.
- * 
+ *
  * And contains information of position, help program detect the error.
- * 
+ *
  */
 class Token {
  private:
@@ -59,10 +60,9 @@ class Token {
   size_t _number;
 
  public:
-  
   /**
    * @brief Construct a new Token object with token kind and position
-   * 
+   *
    * @param token the confirmed token type will be consturcted
    * @param line line in shell text
    * @param number column in shell text
@@ -72,43 +72,43 @@ class Token {
 
   /**
    * @brief check whether if the token type is string
-   * 
+   *
    * @return true if token value is string
    */
   bool is_string();
 
   /**
    * @brief check whether if the token type is reserved_token
-   * 
+   *
    * @return true if token value is reserved_token
    */
   bool is_reserved_token();
 
   /**
    * @brief check whether if the token type is identifier
-   * 
+   *
    * @return true if token value is identifier
    */
   bool is_identifier();
-  
+
   /**
    * @brief Get the string object
-   * 
-   * @return string 
+   *
+   * @return string
    */
   string get_string() const;
 
   /**
    * @brief Get the identifier object
-   * 
-   * @return identifier 
+   *
+   * @return identifier
    */
   identifier get_id() const;
 
   /**
    * @brief Get the reserved_token object
-   * 
-   * @return reserved_token 
+   *
+   * @return reserved_token
    */
   reserved_token get_token() const;
 };

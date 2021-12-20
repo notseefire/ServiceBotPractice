@@ -4,13 +4,15 @@
  * @Author: CYKS
  * @Date: 2021-12-04 17:45:25
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-19 20:40:22
+ * @LastEditTime: 2021-12-20 15:12:28
  */
 
-#include "mainserver.hpp"
 
 #include <iostream>
+#include <utility>
+#include <future>
 #include <boost/log/trivial.hpp>
+#include "mainserver.hpp"
 #include "../cpp-httplib/httplib.h"
 #include "../lib/jsonxx/jsonxx.h"
 
@@ -49,13 +51,36 @@ void MainServer::run() {
     queue->push(QMessage(message));
   });
 
+  std::promise<void> signal_exit;
+
   server.Get("/stop", [&](const httplib::Request &rep, httplib::Response &res) {
     BOOST_LOG_TRIVIAL(info) << "get a stop message";
     cli.Get("/stop");
     server.stop();
   });
 
+  std::thread free_thread([&](std::future<void> future){
+    while(true) {
+      {
+        std::lock_guard<std::mutex> l_pool(thread_pool_mutex);
+        if(thread_pool.empty() && future.wait_for(std::chrono::milliseconds(1)) != std::future_status::timeout) {
+          break;
+        }
+      }
+      std::this_thread::sleep_for(std::chrono::microseconds(30));
+      std::lock_guard<std::mutex> l(free_mutex);
+      while(!free_queue.empty()) {
+        auto element = free_queue.front();
+        BOOST_LOG_TRIVIAL(info) << "delete thread " << element->_id ;
+        delete element;
+        free_queue.pop();
+      }
+    }
+  }, std::move(signal_exit.get_future()));
+
   server.listen("127.0.0.1", 5701);
+  signal_exit.set_value();
+  free_thread.join();
 }
 void MainServer::create_qq_thread(qq_id id) {
   auto queue = new QMessageQueue();
