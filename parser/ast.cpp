@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-11 14:43:02
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-22 19:31:56
+ * @LastEditTime: 2021-12-22 20:13:56
  */
 
 #include "ast.hpp"
@@ -209,32 +209,37 @@ Block::Block(std::string name, Lexer::token_stream::iterator begin,
         case reserved_token::BREAK:
           if(loop_stack.empty()) throw "unexpected break";
           begin++;
-          auto break_temp = new Break();
-          break_temp->set_target(loop_stack.top().second);
-          _stmts.push_back(break_temp);
+          {
+            auto break_temp = new Break();
+            break_temp->set_target(loop_stack.top().second);
+            _stmts.push_back(break_temp);
+          }
 
 
           break;
 
         case reserved_token::LOOPBEGIN:
           begin++;
-          auto loop_begin_temp = new LoopBegin();
-          _stmts.push_back(loop_begin_temp);
-          loop_stack.push(std::make_pair(loop_begin_temp, line));
+          {
+            auto loop_begin_temp = new LoopBegin();
+            _stmts.push_back(loop_begin_temp);
+            loop_stack.push(std::make_pair(loop_begin_temp, line));
+          }
 
           break;
 
         case reserved_token::LOOPEND:
           if(loop_stack.empty()) throw "unexpected endloop";
           begin++;
+          {
+            auto loop_end_temp = new LoopEnd();
+            auto loop_begin = loop_stack.top();
+            loop_begin.first->set_target(line + 1);
+            loop_end_temp->set_target(loop_begin.second);
+            loop_stack.pop();
 
-          auto loop_end_temp = new LoopEnd();
-          auto loop_begin = loop_stack.top();
-          loop_begin.first->set_target(line + 1);
-          loop_end_temp->set_target(loop_begin.second + 1);
-          loop_stack.pop();
-
-          _stmts.push_back(loop_end_temp);
+            _stmts.push_back(loop_end_temp);
+          }
 
           break;
 

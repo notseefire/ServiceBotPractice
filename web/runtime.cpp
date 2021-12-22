@@ -4,15 +4,18 @@
  * @Author: CYKS
  * @Date: 2021-12-19 17:31:16
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-22 19:39:52
+ * @LastEditTime: 2021-12-22 21:38:17
  */
 
 #include "runtime.hpp"
 
 #include <boost/log/trivial.hpp>
 #include <string>
+#include <optional>
 
-void AstStatement::set_target(size_t target) : _target(target) {}
+void AstStatement::set_target(size_t target){
+  _target = target;
+}
 
 size_t AstStatement::get_target() {
   return _target;
@@ -21,7 +24,35 @@ size_t AstStatement::get_target() {
 Context::Context() {}
 
 Context::Context(std::string block, size_t line, statments_table::iterator code)
-    : _block(block), _line(line), _code(code) {}
+    : _block(block), _line(line), _code(code) {
+      // initialize scope in Context
+      add_scope();
+}
+  
+std::optional<Context::symbol_table::iterator> Context::find_variable(std::string name) {
+  for(auto reg = scope_stack.begin(); reg != scope_stack.end(); reg++) {
+    auto it = reg->_symbol_table.find(name);
+    if(it != reg->_symbol_table.end()) {
+      return std::make_pair(true, it);
+    }
+  }
+  return std::make_pair(false, scope_stack.begin()->_symbol_table.end());
+}
+
+std::list<Context::Register>::iterator Context::get_now_scope() {
+  assert(!scope_stack.empty());
+  return scope_stack.begin();
+}
+
+void Context::add_scope() {
+  Register reg;
+  reg.is_branch = false;
+  scope_stack.push_front(std::move(reg));
+}
+
+void Context::pop_scope() {
+  scope_stack.pop_front();
+}
 
 Runtime::Runtime(statments_table* p_table) : _p_table(p_table) {
   end = false;
@@ -63,7 +94,5 @@ void Runtime::step(Parallel* thread) {
 
   auto action = block[current._line];
   current._line++;
-  if (!current._is_break || action->run_in_break()) {
-    action->run(this, thread);
-  }
+  action->run(this, thread);
 }

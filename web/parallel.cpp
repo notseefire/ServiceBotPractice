@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-04 20:14:40
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-22 16:00:08
+ * @LastEditTime: 2021-12-22 20:58:39
  */
 #include <mutex>
 #include <string>
@@ -17,7 +17,7 @@
 
 Parallel::Parallel(QMessageQueue* queue, qq_id id, statments_table* p_table,
                    Runtime* runtime)
-    : _queue(queue), _id(id), _runtime(runtime), _thread(&Parallel::run, this) {
+    : _p_table(p_table), _queue(queue), _id(id), _runtime(runtime), _thread(&Parallel::run, this) {
   _thread.detach();
 }
 
@@ -47,6 +47,7 @@ void Parallel::send_private_msg(std::string msg) {
 }
 
 void Parallel::run() {
+  _runtime = new Runtime(_p_table);
   while (!_runtime->end) {
     _runtime->step(this);
   }

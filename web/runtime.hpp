@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-19 17:31:12
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-22 19:39:31
+ * @LastEditTime: 2021-12-22 21:38:41
  */
 
 #pragma once
@@ -13,6 +13,7 @@
 #include <stack>
 #include <string>
 #include <vector>
+#include <optional>
 
 #include "parallel.hpp"
 
@@ -48,9 +49,18 @@ class Context {
   Context();
   Context(std::string block, size_t line, statments_table::iterator code);
   using symbol_table = std::map<std::string, std::string>;
-  bool _is_branch = false;
-  bool _is_break = false;
-  symbol_table _symbol_table;
+
+  struct Register {
+    symbol_table _symbol_table;
+    bool is_branch;
+  };
+
+  optional<symbol_table::iterator> find_variable(std::string name);
+  void add_scope();
+  void pop_scope();
+  std::list<Register>::iterator get_now_scope();
+
+  std::list<Register> scope_stack;
   std::string _block;
   size_t _line;
   statments_table::iterator _code;

@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-01 22:41:56
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 14:15:58
+ * @LastEditTime: 2021-12-22 20:58:53
  */
 
 #pragma once
@@ -86,4 +86,5 @@ class Parallel {
  private:
   QMessageQueue* _queue;
   Runtime* _runtime;
+  statments_table* _p_table;
 };
