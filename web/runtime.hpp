@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-19 17:31:12
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 13:48:45
+ * @LastEditTime: 2021-12-22 19:39:31
  */
 
 #pragma once
@@ -31,6 +31,10 @@ using statments_table = std::map<std::string, statments>;
 class AstStatement {
  public:
   virtual void run(Runtime* runtime, Parallel* thread) = 0;
+  void set_target(size_t target);
+  size_t get_target();
+ private:
+  size_t _target;
 };
 
 /**
@@ -44,10 +48,13 @@ class Context {
   Context();
   Context(std::string block, size_t line, statments_table::iterator code);
   using symbol_table = std::map<std::string, std::string>;
+  bool _is_branch = false;
+  bool _is_break = false;
   symbol_table _symbol_table;
   std::string _block;
   size_t _line;
   statments_table::iterator _code;
+  std::stack<size_t> _loop_stack;
 
  private:
 };

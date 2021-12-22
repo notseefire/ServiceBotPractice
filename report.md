@@ -37,20 +37,32 @@
 所以在本项目设计的关键字及语法功能有
 
 ```shell
-#include [script] 预处理，表示程序需要引用到
 
-echo [expression] 回复消息
+echo {expression}/{id} 回复消息
 set {id} [= string] 设置变量名及变量值
-input {id}等待用户输入消息，并将消息内容储存在变量中 
-call [id] {string} {proc} 调用另外一份脚本文件 script
-break 结束当前所在脚本的执行
+input {id} [wait {number}] 等待用户输入消息，并将消息内容储存在变量中
+assign {id} = {string} 修改变量的值
+call {id} = {string} {proc_id} 调用过程proc_id
+break 结束执行
 ```
 
 使用这套`DSL` 实现U公司的需求可以使用以下脚本
 
 ```shell
-/main.u
-
+proc main:
+	echo "你好"
+	set function
+	
+	input function wait 5
+	call function = "退款" refund
+	call function = "工单" order
+	
+	echo "再见"
+	
+proc refund:
+	
+	
+proc order:
 ```
 
 ## 顶层设计
@@ -129,7 +141,7 @@ Parser的功能为解释设计的DSL语言，生成可执行代码，符号表�
 
 #### Modern C++ Mutex
 
-为了实现线程间的同步与通信，我们需要使用 C++ 提供的 `std::mutex` 和条件变量。
+为了实现线程间的同步与通信，我们需要使用 C++ 提供的 `std::mutex` 。
 
 并以此来实现一个thread-safe的消息队列
 

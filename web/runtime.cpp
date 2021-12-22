@@ -4,13 +4,19 @@
  * @Author: CYKS
  * @Date: 2021-12-19 17:31:16
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 10:16:59
+ * @LastEditTime: 2021-12-22 19:39:52
  */
 
 #include "runtime.hpp"
 
-#include <string>
 #include <boost/log/trivial.hpp>
+#include <string>
+
+void AstStatement::set_target(size_t target) : _target(target) {}
+
+size_t AstStatement::get_target() {
+  return _target;
+}
 
 Context::Context() {}
 
@@ -57,5 +63,7 @@ void Runtime::step(Parallel* thread) {
 
   auto action = block[current._line];
   current._line++;
-  action->run(this, thread);
+  if (!current._is_break || action->run_in_break()) {
+    action->run(this, thread);
+  }
 }

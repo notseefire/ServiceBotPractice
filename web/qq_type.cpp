@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-04 18:36:20
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 13:55:31
+ * @LastEditTime: 2021-12-20 19:54:40
  */
 
 #include <string>
@@ -32,7 +32,7 @@ std::unique_lock<std::mutex> QMessageQueue::wait_data(int micro_seconds) {
   int count = 0;
   while(!_ready && count < micro_seconds) {
     head_lock.unlock();
-    std::this_thread::sleep_for(std::chrono::microseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     count += 100;
     head_lock.lock();
   }

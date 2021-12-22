@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-19 20:00:53
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 14:53:32
+ * @LastEditTime: 2021-12-22 19:34:34
  */
 
 #pragma once
@@ -40,6 +40,7 @@ class Branch : public AstStatement {
 class Break : public AstStatement {
  public:
   void run(Runtime *runtime, Parallel *thread);
+ private:
 };
 
 class Input : public AstStatement {
@@ -70,4 +71,29 @@ class Assign : public AstStatement {
  private:
   string _id;
   string _value;
+};
+
+class Other : public AstStatement {
+ public:
+  Other(string id);
+  void run(Runtime *runtime, Parallel *thread);
+
+ private:
+  string _id;
+};
+
+class LoopBegin : public AstStatement {
+ public:
+  LoopBegin();
+  void run(Runtime *runtime, Parallel *thread);
+
+ private:
+};
+
+class LoopEnd : public AstStatement {
+ public:
+  LoopEnd();
+  void run(Runtime *runtime, Parallel *thread) override;
+
+ private:
 };

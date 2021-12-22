@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-04 20:14:40
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 14:08:37
+ * @LastEditTime: 2021-12-22 16:00:08
  */
 #include <mutex>
 #include <string>
@@ -43,6 +43,7 @@ void Parallel::send_private_msg(std::string msg) {
   } catch (std::exception& e) {
     std::cerr << e.what() << std::endl;
   }
+  std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
 void Parallel::run() {

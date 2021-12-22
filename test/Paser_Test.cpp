@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 19:39:43
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 15:47:38
+ * @LastEditTime: 2021-12-20 20:41:10
  */
 #include "../parser/lexer.hpp"
 #include "../parser/parser.hpp"
@@ -14,12 +14,10 @@
 TEST(Parser, FileManager) {
   fs::path path(
       "/home/cyks/Documents/2021Fall/Homework/Program/assginment/"
-      "example_scripts/regular");
+      "example_scripts/company");
   auto p = std::make_shared<ScriptManager>(ScriptManager(path));
   auto t = p->begin();
-  EXPECT_EQ((*t).first, "scripts2");
-  t++;
-  EXPECT_EQ((*t).first, "scripts1");
+  EXPECT_EQ((*t).first, "main");
   t++;
   EXPECT_EQ(t, p->end());
 }
@@ -27,7 +25,7 @@ TEST(Parser, FileManager) {
 TEST(Parser, LexerTest) {
   fs::path path(
       "/home/cyks/Documents/2021Fall/Homework/Program/assginment/"
-      "example_scripts/regular");
+      "example_scripts/company");
   auto p = std::make_shared<ScriptManager>(ScriptManager(path));
   LookupTableFactory factory;
   auto keywords = factory.get_keyword_table();
@@ -39,7 +37,7 @@ TEST(Parser, LexerTest) {
 TEST(Parser, PaserTest) {
   fs::path path(
       "/home/cyks/Documents/2021Fall/Homework/Program/assginment/"
-      "example_scripts/regular");
+      "example_scripts/company");
   auto p = std::make_shared<ScriptManager>(ScriptManager(path));
   LookupTableFactory factory;
   auto keywords = factory.get_keyword_table();

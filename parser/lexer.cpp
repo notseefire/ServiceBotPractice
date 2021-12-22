@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 21:07:50
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 15:53:03
+ * @LastEditTime: 2021-12-22 19:04:59
  */
 
 #include "lexer.hpp"
@@ -30,6 +30,12 @@ map<string, Lexer::token_stream> Lexer::lex(ScriptManager &manager) {
     Lexer::token_stream stream = lex_script((*t).second);
     _token_table[(*t).first] = stream;
   }
+  if(!_error_queue.empty()) {
+    for(auto index: _error_queue) {
+      BOOST_LOG_TRIVIAL(error) << index;
+    }
+    throw "lexer error";
+  }
   return _token_table;
 }
 
@@ -42,7 +48,7 @@ Lexer::token_stream Lexer::lex_script(const fs::path &script_path) {
   bool line_anotation = false;
   string s;
   int state = 0;
-  size_t line_num = 0, number = 0, cur_number = 0;
+  _line_num = 1, _number = 1, _cur_number = 1;
   while (getline(in, line)) {
     line.push_back('\n');
     for (auto p = line.begin(); p != line.end(); p++) {
@@ -58,10 +64,12 @@ Lexer::token_stream Lexer::lex_script(const fs::path &script_path) {
         state = 0;
         _error_queue.push_back(str);
       }
-      number++;
+      _number++;
     }
     _comment_line = false;
     _line_num++;
+    _number = 0;
+    _cur_number = 0;
     /*
     for (auto p = _stream.begin(); p != _stream.end(); p++) {
       if (p->is_string()) {
@@ -76,7 +84,6 @@ Lexer::token_stream Lexer::lex_script(const fs::path &script_path) {
     }
     std::cout << std::endl;
     */
-    s.clear();
   }
 
   return _stream;
@@ -92,11 +99,14 @@ char Lexer::transfer() {
 bool Lexer::lex_char(int &state, string &s) {
   switch (state) {
     case 0:
-      if (_is_alpha) {
+      if (_is_alpha || _ch == '_') {
         s.push_back(_ch);
         _cur_number = _number;
         state = 1;
       } else if (_is_digit) {
+        s.push_back(_ch);
+        _cur_number = _number;
+        state = 7;
       } else if (_is_operator) {
         _stream.push_back(Token((*_it).second, _line_num, _number));
       } else if (_ch == '#') {
@@ -156,6 +166,16 @@ bool Lexer::lex_char(int &state, string &s) {
       s.push_back(transfer());
       state = 6;
       break;
+    case 7:
+      if(_is_digit) {
+        s.push_back(_ch);
+      } else {
+        _stream.push_back(Token(stoi(s), _line_num, _cur_number));
+        s.clear();
+        state = 0;
+        return 1;
+      }
+      break;
   }
   return 0;
 }
@@ -182,6 +202,10 @@ unique_ptr<Lexer::lookup_table> LookupTableFactory::get_keyword_table() {
           {"exit", reserved_token::EXIT},
           {"set", reserved_token::SET},
           {"assign", reserved_token::CHANGE},
+          {"wait", reserved_token::WAIT},
+          {"other", reserved_token::OTHER},
+          {"loop", reserved_token::LOOPBEGIN},
+          {"endloop", reserved_token::LOOPEND},
       });
 
   return p;

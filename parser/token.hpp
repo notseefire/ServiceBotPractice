@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 18:44:06
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 15:53:21
+ * @LastEditTime: 2021-12-22 17:17:01
  */
 #pragma once
 
@@ -29,6 +29,10 @@ enum struct reserved_token {
   EXIT,
   SET,
   CHANGE,
+  WAIT,
+  OTHER,
+  LOOPBEGIN,
+  LOOPEND,
 
   ASSIGN,
   ADD,
@@ -53,13 +57,13 @@ struct identifier {
  */
 class Token {
  private:
-  using token_value = variant<string, reserved_token, identifier>;
+  using token_value = variant<string, reserved_token, identifier, int>;
 
   token_value _value;
-  size_t _line;
-  size_t _number;
 
  public:
+  size_t _line;
+  size_t _number;
   /**
    * @brief Construct a new Token object with token kind and position
    *
@@ -92,6 +96,13 @@ class Token {
   bool is_identifier();
 
   /**
+   * @brief check whether if the token type is number
+   * 
+   * @return true if token value is number
+   */
+  bool is_number();
+
+  /**
    * @brief Get the string object
    *
    * @return string
@@ -111,4 +122,11 @@ class Token {
    * @return reserved_token
    */
   reserved_token get_token() const;
+
+  /**
+   * @brief Get the number object
+   *
+   * @return number
+   */
+  int get_number() const;
 };
