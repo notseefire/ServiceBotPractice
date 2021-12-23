@@ -4,24 +4,31 @@
  * @Author: CYKS
  * @Date: 2021-12-04 20:14:40
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-22 20:58:39
+ * @LastEditTime: 2021-12-23 10:29:34
  */
-#include <mutex>
-#include <string>
-#include <optional>
-#include <boost/log/trivial.hpp>
-
 #include "parallel.hpp"
+
+#include <boost/log/trivial.hpp>
+#include <mutex>
+#include <optional>
+#include <string>
+
 #include "../cpp-httplib/httplib.h"
 #include "mainserver.hpp"
 
 Parallel::Parallel(QMessageQueue* queue, qq_id id, statments_table* p_table,
                    Runtime* runtime)
-    : _p_table(p_table), _queue(queue), _id(id), _runtime(runtime), _thread(&Parallel::run, this) {
+    : _p_table(p_table),
+      _queue(queue),
+      _id(id),
+      _runtime(runtime),
+      _thread(&Parallel::run, this) {
   _thread.detach();
 }
 
-std::optional<QMessage> Parallel::wait_data(int micro_seconds) { return _queue->pop(micro_seconds); }
+std::optional<QMessage> Parallel::wait_data(int micro_seconds) {
+  return _queue->pop(micro_seconds);
+}
 
 void Parallel::quit() {
   {
@@ -43,7 +50,7 @@ void Parallel::send_private_msg(std::string msg) {
   } catch (std::exception& e) {
     std::cerr << e.what() << std::endl;
   }
-  std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
 void Parallel::run() {

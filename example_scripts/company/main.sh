@@ -4,7 +4,7 @@
  # @Author: CYKS
  # @Date: 2021-12-20 19:40:22
  # @LastEditors: CYKS
- # @LastEditTime: 2021-12-22 16:56:21
+ # @LastEditTime: 2021-12-23 10:31:23
 ### 
 proc main:
 	set greet
@@ -23,15 +23,38 @@ proc begin:
 		input function wait 30
 		call function = "退款" refund
 		call function = "工单" order
+		call function = "" silence
+		call function = "退出" out
 		other wrong
 	endloop
 	echo "再见"
+
+proc out:
+	echo "系统将退出"
+
+proc silence:
+	echo "没有接收到输入，将自动退出"
 
 proc wrong:
 	echo "输入了未知的功能，请重新输入"
 	
 proc refund:
-  echo "退款"
+	set item
+	set number
+	echo "请输入退款的商品"
+	input item
+	echo "请输入退款商品的数量"
+	input number
+	echo "记录:退款" + number + "个" + item 
+	echo "请等待工作人员核实"
 	
 proc order:
-  echo "工单"
+	set item
+	set number
+	echo "输入购买的商品"
+	input item
+	echo "输入购买商品的数量"
+	input number
+	assign number = number + "个" + item
+	echo "记录:购买" + number 
+	echo "请等待工作人员核实"

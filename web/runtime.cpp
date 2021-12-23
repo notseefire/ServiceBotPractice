@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-19 17:31:16
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-22 21:38:17
+ * @LastEditTime: 2021-12-22 21:39:24
  */
 
 #include "runtime.hpp"
@@ -33,10 +33,10 @@ std::optional<Context::symbol_table::iterator> Context::find_variable(std::strin
   for(auto reg = scope_stack.begin(); reg != scope_stack.end(); reg++) {
     auto it = reg->_symbol_table.find(name);
     if(it != reg->_symbol_table.end()) {
-      return std::make_pair(true, it);
+      return it;
     }
   }
-  return std::make_pair(false, scope_stack.begin()->_symbol_table.end());
+  return std::nullopt;
 }
 
 std::list<Context::Register>::iterator Context::get_now_scope() {

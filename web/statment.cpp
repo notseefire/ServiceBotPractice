@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-19 20:00:59
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-22 21:32:37
+ * @LastEditTime: 2021-12-23 10:14:10
  */
 
 #include "statment.hpp"
@@ -24,7 +24,7 @@ Set::Set(string id, string init) : _id(id), _init(init) {
 void Set::run(Runtime *runtime, Parallel *thread) {
   Context &current = runtime->current;
   auto it = current.find_variable(_id);
-  if (!it.first) {
+  if (!it.has_value()) {
     BOOST_LOG_TRIVIAL(trace) << "declare " << _id << " = " << _init;
     current.get_now_scope()->_symbol_table[_id] = _init;
   } else {
@@ -33,9 +33,9 @@ void Set::run(Runtime *runtime, Parallel *thread) {
   }
 }
 
-Branch::Branch(string id, string value, string proc_id)
-    : _id(id), _value(value), _proc_id(proc_id) {
-  if (value.empty()) {
+Branch::Branch(string id, string value, string proc_id, bool check)
+    : _id(id), _value(value), _proc_id(proc_id), _check(check) {
+  if (check) {
     BOOST_LOG_TRIVIAL(trace) << "branch(" << proc_id << ")";
   } else {
     BOOST_LOG_TRIVIAL(trace) << "branch(" << id << ", " << value << ", "
@@ -46,17 +46,21 @@ Branch::Branch(string id, string value, string proc_id)
 void Branch::run(Runtime *runtime, Parallel *thread) {
   Context &current = runtime->current;
   auto it = current.find_variable(_id);
-  if (!it.first) {
+  if(!_check) {
+    runtime->jump(_proc_id);
+    return;
+  }
+
+  if (!it.has_value()) {
     BOOST_LOG_TRIVIAL(error) << "the variable " << _id << " have not declared";
     runtime->end = true;
   } else {
-    auto it_table = it.second;
-    if (it_table->second == _value) {
+    if (it.value()->second == _value) {
       BOOST_LOG_TRIVIAL(trace) << "branch hit";
       current.get_now_scope()->is_branch = true;
       runtime->jump(_proc_id);
     } else {
-      BOOST_LOG_TRIVIAL(trace) << "branch not hit " << it_table->second << " != " << _value;
+      BOOST_LOG_TRIVIAL(trace) << "branch not hit " << it.value()->first << " != " << _value;
     } 
   } 
 }
@@ -68,44 +72,55 @@ Input::Input(string id, uint32_t wait_time) : _id(id), _wait_time(wait_time) {
 void Input::run(Runtime *runtime, Parallel *thread) {
   Context &current = runtime->current;
   auto it = current.find_variable(_id);
-  if (!it.first) {
+  if (!it.has_value()) {
     BOOST_LOG_TRIVIAL(error) << "the variable " << _id << " have not declared";
     runtime->end = true;
   } else {
     auto data = thread->wait_data(_wait_time * 1000);
-    auto it_table = it.second;
     if (data.has_value()) {
-      it_table->second = data->get_inner();
-      BOOST_LOG_TRIVIAL(trace) << "input " << it_table->second;
+      it.value()->second = data->get_inner();
+      BOOST_LOG_TRIVIAL(trace) << "input " << it.value()->second;
     } else {
       BOOST_LOG_TRIVIAL(warning) << "wait input timeout";
-      it_table->second = "";
+      it.value()->second = "";
     }
   }
 }
 
-Print::Print(string id, string value) : _id(id), _value(value) {
-  if (id.empty()) {
-    BOOST_LOG_TRIVIAL(trace) << "print(\"" << value << "\")";
-  } else {
-    BOOST_LOG_TRIVIAL(trace) << "print(" << id << ")";
+Print::Print(string id, vector<Token> value_list) : _id(id), _value_list(value_list) {
+  string msg = "print(";
+  for(auto index = _value_list.begin(); index != _value_list.end(); index++) {
+    if(index->is_string()) {
+      msg += "\"" + index->get_string() + "\"";
+    } else {
+      msg += index->get_id()._value;
+    }
+    if(_value_list.end() - index != 1) {
+      msg += ", ";
+    }
   }
+  msg += ")";
+  BOOST_LOG_TRIVIAL(trace) << msg;
 }
 
 void Print::run(Runtime *runtime, Parallel *thread) {
   Context &current = runtime->current;
-  if(_id.empty()) {
-    thread->send_private_msg(_value);
-  } else {
-    auto it = current.find_variable(_id);
-    if (!it.first) {
-      BOOST_LOG_TRIVIAL(error) << "the variable " << _id << " have not declared";
-      runtime->end = true;
+  string msg;
+  for(auto index = _value_list.begin(); index != _value_list.end(); index++) {
+    if(index->is_string()) {
+      msg += index->get_string();
     } else {
-      auto it_table = it.second;
-      thread->send_private_msg(it_table->second);
+      auto it = current.find_variable(index->get_id()._value);
+      if (!it.has_value()) {
+        BOOST_LOG_TRIVIAL(error) << "the variable " << _id << " have not declared";
+        runtime->end = true;
+        return;
+      } else {
+        msg += it.value()->second;
+      }
     }
   }
+  thread->send_private_msg(msg);
 }
 
 void Break::run(Runtime *runtime, Parallel *thread) {
@@ -115,20 +130,46 @@ void Break::run(Runtime *runtime, Parallel *thread) {
   current.pop_scope();
 }
 
-Assign::Assign(string id, string value) : _id(id), _value(value) {
-  BOOST_LOG_TRIVIAL(trace) << "assign(" << id << ", " << value <<")";
+Assign::Assign(string id, vector<Token> value_list) : _id(id), _value_list(value_list) {
+  string msg = "assign(" + id + " = ";
+  for(auto index = _value_list.begin(); index != _value_list.end(); index++) {
+    if(index->is_string()) {
+      msg += "\"" + index->get_string() + "\"";
+    } else {
+      msg += index->get_id()._value;
+    }
+    if(_value_list.end() - index != 1) {
+      msg += ", ";
+    }
+  }
+  msg += ")";
+  BOOST_LOG_TRIVIAL(trace) << msg;
 }
 
 void Assign::run(Runtime *runtime, Parallel *thread) {
   Context &current = runtime->current;
   auto it = current.find_variable(_id);
-  if (it.first) {
-    auto it_table = it.second; 
-    it_table->second = _value;
-  } else {
+  if (!it.has_value()) {
     BOOST_LOG_TRIVIAL(error) << "the variable " << _id << " have not declared";
     runtime->end = true;
+    return;
   }
+  string assign_value = "";
+  for(auto index = _value_list.begin(); index != _value_list.end(); index++) {
+    if(index->is_string()) {
+      assign_value += index->get_string();
+    } else {
+      auto temp = current.find_variable(index->get_id()._value);
+      if (!temp.has_value()) {
+        BOOST_LOG_TRIVIAL(error) << "the variable " << _id << " have not declared";
+        runtime->end = true;
+        return;
+      } else {
+        assign_value += temp.value()->second;
+      }
+    }
+  }
+  it.value()->second = assign_value;
 }
 
 Other::Other(string id) : _id(id) {
@@ -157,6 +198,8 @@ LoopEnd::LoopEnd() {
 
 void LoopEnd::run(Runtime *runtime, Parallel *thread) {
   Context &current = runtime->current;
-  current._line = get_target();
+  if(!current.get_now_scope()->is_branch) {
+    current._line = get_target();
+  }
   current.pop_scope();
 }

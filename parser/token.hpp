@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 18:44:06
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-22 17:17:01
+ * @LastEditTime: 2021-12-23 10:47:25
  */
 #pragma once
 
@@ -33,9 +33,11 @@ enum struct reserved_token {
   OTHER,
   LOOPBEGIN,
   LOOPEND,
+  LOAD,
+  STORE,
 
   ASSIGN,
-  ADD,
+  OP_ADD,
   COLON,
 };
 

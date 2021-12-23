@@ -4,15 +4,17 @@
  * @Author: CYKS
  * @Date: 2021-12-19 20:00:53
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-22 19:34:34
+ * @LastEditTime: 2021-12-23 10:02:03
  */
 
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "parallel.hpp"
 #include "runtime.hpp"
+#include "../parser/token.hpp"
 
 using namespace std;
 
@@ -28,10 +30,11 @@ class Set : public AstStatement {
 
 class Branch : public AstStatement {
  public:
-  Branch(string id, string value, string proc_id);
+  Branch(string id, string value, string proc_id, bool check);
   void run(Runtime *runtime, Parallel *thread);
 
  private:
+  bool _check;
   string _id;
   string _value;
   string _proc_id;
@@ -40,6 +43,7 @@ class Branch : public AstStatement {
 class Break : public AstStatement {
  public:
   void run(Runtime *runtime, Parallel *thread);
+
  private:
 };
 
@@ -55,22 +59,22 @@ class Input : public AstStatement {
 
 class Print : public AstStatement {
  public:
-  explicit Print(string id, string value);
+  explicit Print(string id, vector<Token> value_list);
   void run(Runtime *runtime, Parallel *thread);
 
  private:
   string _id;
-  string _value;
+  vector<Token> _value_list;
 };
 
 class Assign : public AstStatement {
  public:
-  Assign(string id, string value);
+  Assign(string id, vector<Token> value_list);
   void run(Runtime *runtime, Parallel *thread);
 
  private:
   string _id;
-  string _value;
+  vector<Token> _value_list;
 };
 
 class Other : public AstStatement {

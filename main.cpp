@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 10:30:36
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-22 20:18:28
+ * @LastEditTime: 2021-12-23 10:42:37
  */
 #include <iostream>
 
@@ -17,7 +17,7 @@
 int main(int argc, char** argv) {
   fs::path path(
       "/home/cyks/Documents/2021Fall/Homework/Program/assginment/"
-      "example_scripts/company");
+      "example_scripts/course");
   auto p = std::make_shared<ScriptManager>(ScriptManager(path));
   LookupTableFactory factory;
   try {

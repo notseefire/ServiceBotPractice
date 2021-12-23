@@ -55,7 +55,7 @@ class Context {
     bool is_branch;
   };
 
-  optional<symbol_table::iterator> find_variable(std::string name);
+  std::optional<symbol_table::iterator> find_variable(std::string name);
   void add_scope();
   void pop_scope();
   std::list<Register>::iterator get_now_scope();

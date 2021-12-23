@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 21:07:50
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-22 19:04:59
+ * @LastEditTime: 2021-12-23 10:47:14
  */
 
 #include "lexer.hpp"
@@ -183,7 +183,7 @@ bool Lexer::lex_char(int &state, string &s) {
 unique_ptr<Lexer::lookup_table> LookupTableFactory::get_operator_table() {
   unique_ptr<Lexer::lookup_table> p =
       make_unique<Lexer::lookup_table>(Lexer::lookup_table{
-          {"+", reserved_token::ADD},
+          {"+", reserved_token::OP_ADD},
           {"=", reserved_token::ASSIGN},
           {":", reserved_token::COLON},
       });
@@ -206,6 +206,8 @@ unique_ptr<Lexer::lookup_table> LookupTableFactory::get_keyword_table() {
           {"other", reserved_token::OTHER},
           {"loop", reserved_token::LOOPBEGIN},
           {"endloop", reserved_token::LOOPEND},
+          {"store"},
+          {"load"},
       });
 
   return p;

@@ -4,16 +4,15 @@
  * @Author: CYKS
  * @Date: 2021-12-11 14:43:02
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-22 20:13:56
+ * @LastEditTime: 2021-12-23 10:23:58
  */
 
+#include "token.hpp"
 #include "ast.hpp"
-
 #include <boost/log/trivial.hpp>
 #include <string>
 
 #include "../web/statment.hpp"
-#include "token.hpp"
 
 using namespace std;
 Set *Block::find_set(Lexer::token_stream::iterator &begin,
@@ -66,7 +65,7 @@ Branch *Block::find_branch(Lexer::token_stream::iterator &begin,
   // now id is procedure name without conditino
   if (!begin->is_reserved_token() ||
       begin->get_token() != reserved_token::ASSIGN) {
-    return new Branch(id, condition, id);
+    return new Branch(id, condition, id, false);
   }
 
   begin++;
@@ -85,7 +84,7 @@ Branch *Block::find_branch(Lexer::token_stream::iterator &begin,
   procedure = begin->get_id()._value;
   begin++;
 
-  return new Branch(id, condition, procedure);
+  return new Branch(id, condition, procedure, true);
 }
 
 Input *Block::find_input(Lexer::token_stream::iterator &begin,
@@ -121,25 +120,30 @@ Input *Block::find_input(Lexer::token_stream::iterator &begin,
 Print *Block::find_print(Lexer::token_stream::iterator &begin,
                          const Lexer::token_stream::iterator &end) const {
   string id;
-  string value;
+  vector<Token> value_list;
   if (begin == end || !(begin->is_string() || begin->is_identifier())) {
-    throw "expect string value";
+    throw "expect output value";
   }
-
-  if (begin->is_identifier()) {
-    id = begin->get_id()._value;
-  } else {
-    value = begin->get_string();
-  }
+  value_list.push_back(*begin);
   begin++;
+  while(begin != end && begin->is_reserved_token() && begin->get_token() == reserved_token::OP_ADD) {
+    begin++;
 
-  return new Print(id, value);
+    if (begin == end || !(begin->is_string() || begin->is_identifier())) {
+      throw "expect value after add operator";
+    }
+
+    value_list.push_back(*begin);
+
+    begin++;
+  }
+
+  return new Print(id, value_list);
 }
 
 Assign *Block::find_assign(Lexer::token_stream::iterator &begin,
                            const Lexer::token_stream::iterator &end) const {
   string id;
-  string value;
   if (begin == end || !begin->is_identifier()) {
     throw "expected identifier";
   }
@@ -157,16 +161,25 @@ Assign *Block::find_assign(Lexer::token_stream::iterator &begin,
 
   begin++;
 
-  if (begin == end) {
+  vector<Token> value_list;
+  if (begin == end || !(begin->is_string() || begin->is_identifier())) {
     throw "expect init value";
   }
-  if (!(begin->is_string())) {
-    throw "expect string value";
+  value_list.push_back(*begin);
+  begin++;
+  while(begin != end && begin->is_reserved_token() && begin->get_token() == reserved_token::OP_ADD) {
+    begin++;
+
+    if (begin == end || !(begin->is_string() || begin->is_identifier())) {
+      throw "expect value after add operator";
+    }
+
+    value_list.push_back(*begin);
+
+    begin++;
   }
 
-  value = begin->get_string();
-  begin++;
-  return new Assign(id, value);
+  return new Assign(id, value_list);
 }
 
 Other *Block::find_other(Lexer::token_stream::iterator &begin,
