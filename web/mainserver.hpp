@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-04 17:45:19
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-23 10:49:48
+ * @LastEditTime: 2021-12-23 11:48:50
  */
 
 #pragma once
@@ -13,11 +13,14 @@
 #include <mutex>
 #include <queue>
 #include <set>
+#include <experimental/filesystem>
 
 #include "../cpp-httplib/httplib.h"
 #include "parallel.hpp"
 #include "qq_type.hpp"
 #include "statment.hpp"
+
+namespace fs = std::experimental::filesystem;
 
 /**
  * @brief the server framework held thread_pool. it manages resource thread need
@@ -38,7 +41,7 @@ class MainServer {
    *
    * @param _table contains all block name and block body from ast.
    */
-  explicit MainServer(statments_table _table);
+  explicit MainServer(statments_table _table, fs::path db_path);
 
   /**
    * @brief server start to listen on port
@@ -58,4 +61,5 @@ class MainServer {
  private:
   std::map<qq_id, QMessageQueue*> _mqueue;
   statments_table _table;
+  fs::path _db_path;
 };

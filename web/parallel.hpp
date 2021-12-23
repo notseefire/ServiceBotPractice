@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-01 22:41:56
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-22 20:58:53
+ * @LastEditTime: 2021-12-23 12:12:05
  */
 
 #pragma once
@@ -14,6 +14,8 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "../lib/jsonxx/jsonxx.h"
+
 
 #include "../cpp-httplib/httplib.h"
 #include "./runtime.hpp"
@@ -48,7 +50,7 @@ class Parallel {
    * @param runtime contains context when runing scripts
    */
   Parallel(QMessageQueue* queue, qq_id id, statments_table* p_table,
-           Runtime* runtime);
+           Runtime* runtime, jsonxx::Object obj);
 
   /**
    * @brief run `Runtime`
@@ -82,6 +84,7 @@ class Parallel {
 
   std::thread _thread;
   qq_id _id;
+  jsonxx::Object _db;
 
  private:
   QMessageQueue* _queue;

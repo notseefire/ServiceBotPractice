@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-11 14:42:59
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-22 16:09:25
+ * @LastEditTime: 2021-12-23 12:03:03
  */
 
 #pragma once
@@ -41,6 +41,10 @@ class Block {
   Assign *find_assign(Lexer::token_stream::iterator &begin,
                       const Lexer::token_stream::iterator &end) const;
   Other *find_other(Lexer::token_stream::iterator &begin,
+                      const Lexer::token_stream::iterator &end) const;
+  Load *find_load(Lexer::token_stream::iterator &begin,
+                      const Lexer::token_stream::iterator &end) const;
+  Store *find_store(Lexer::token_stream::iterator &begin,
                       const Lexer::token_stream::iterator &end) const;
   statments _stmts;
 

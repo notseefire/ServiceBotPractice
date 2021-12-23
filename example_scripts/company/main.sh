@@ -4,7 +4,7 @@
  # @Author: CYKS
  # @Date: 2021-12-20 19:40:22
  # @LastEditors: CYKS
- # @LastEditTime: 2021-12-23 10:31:23
+ # @LastEditTime: 2021-12-23 13:01:57
 ### 
 proc main:
 	set greet
@@ -45,7 +45,10 @@ proc refund:
 	input item
 	echo "请输入退款商品的数量"
 	input number
-	echo "记录:退款" + number + "个" + item 
+	echo "退款" + number + "个" + item 
+	set record
+	assign record = number + "," + item 
+	store record "退款"
 	echo "请等待工作人员核实"
 	
 proc order:

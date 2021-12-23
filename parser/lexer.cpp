@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 21:07:50
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-23 10:47:14
+ * @LastEditTime: 2021-12-23 11:29:53
  */
 
 #include "lexer.hpp"
@@ -206,8 +206,8 @@ unique_ptr<Lexer::lookup_table> LookupTableFactory::get_keyword_table() {
           {"other", reserved_token::OTHER},
           {"loop", reserved_token::LOOPBEGIN},
           {"endloop", reserved_token::LOOPEND},
-          {"store"},
-          {"load"},
+          {"store", reserved_token::STORE},
+          {"load", reserved_token::LOAD},
       });
 
   return p;

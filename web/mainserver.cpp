@@ -4,21 +4,30 @@
  * @Author: CYKS
  * @Date: 2021-12-04 17:45:25
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 15:12:28
+ * @LastEditTime: 2021-12-23 13:12:49
  */
 
 
 #include <iostream>
 #include <utility>
 #include <future>
+#include <fstream>
 #include <boost/log/trivial.hpp>
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
 #include "mainserver.hpp"
 #include "../cpp-httplib/httplib.h"
 #include "../lib/jsonxx/jsonxx.h"
 
 using namespace jsonxx;
+namespace logging = boost::log;
 
-MainServer::MainServer(statments_table table): _table(table) {}
+MainServer::MainServer(statments_table table, fs::path db_path): _table(table), _db_path(db_path){
+  if(!fs::is_directory(db_path)) {
+    throw "path should be directory";
+  }
+  logging::core::get()->set_filter(logging::trivial::severity >= logging::trivial::info);
+}
 
 httplib::Client MainServer::cli = httplib::Client("http://127.0.0.1:5700");
 
@@ -72,6 +81,11 @@ void MainServer::run() {
       while(!free_queue.empty()) {
         auto element = free_queue.front();
         BOOST_LOG_TRIVIAL(info) << "delete thread " << element->_id ;
+        
+        fs::path json_path = _db_path / fs::path(std::to_string(element->_id) + ".json");
+        ofstream out(json_path.string());
+
+        out << element->_db.json();
         delete element;
         free_queue.pop();
       }
@@ -86,8 +100,21 @@ void MainServer::create_qq_thread(qq_id id) {
   auto queue = new QMessageQueue();
   _mqueue[id] = queue;
 
+  fs::path json_path = _db_path / fs::path(std::to_string(id) + ".json");
   Runtime* runtime = new Runtime(&_table);
-  auto thread = new Parallel(queue, id, &_table, runtime);
+  jsonxx::Object o;
+
+  if(fs::exists(json_path)) {
+    ifstream in(json_path.string(), ifstream::in);
+
+    std::string json_content((std::istreambuf_iterator<char>(in)),
+                            std::istreambuf_iterator<char>());
+
+    o.parse(json_content);
+    in.close();
+  }
+  
+  auto thread = new Parallel(queue, id, &_table, runtime, o);
 
   thread_pool.insert(std::make_pair(id, thread));
 }

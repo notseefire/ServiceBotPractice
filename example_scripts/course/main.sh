@@ -4,24 +4,22 @@
  # @Author: CYKS
  # @Date: 2021-12-23 10:34:27
  # @LastEditors: CYKS
- # @LastEditTime: 2021-12-23 10:43:26
+ # @LastEditTime: 2021-12-23 12:50:19
 ### 
 proc main:
   echo "欢迎"
-  echo '可以输入"投诉"或"账单"'
+  set function
   loop
     loop
-      set function
       input function wait 30
       call function = "投诉" complain
       call function = "账单" bill
+      call function = "注册" register
       call function = "" silence
+      call function = "退出" exit_service
       other tips
     endloop
-    echo "输入1退出"
-    set temp
-    input temp
-    call temp = "1" exit_service
+    call function = "退出" null
   endloop
 
   echo "再见"
@@ -31,12 +29,22 @@ proc complain:
   set msg
   input msg wait 30
   echo "记录：" + msg
+  assign msg = "记录：" + msg
+  store msg "投诉记录"
 
 proc bill:
   echo "查看您本月的账单信息"
+  set info
+  load info "账单"
+  assign info = "余额: " + info
+  echo info
+
+proc register:
+  set info = "100"
+  store info "账单"
 
 proc tips:
-  echo '可以输入"投诉"或"账单"'
+  echo '可以输入"投诉"|"账单"|"退出"|"注册”'
 
 proc silence:
   echo "未接收到消息"

@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-19 20:00:53
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-23 10:02:03
+ * @LastEditTime: 2021-12-23 11:39:52
  */
 
 #pragma once
@@ -100,4 +100,24 @@ class LoopEnd : public AstStatement {
   void run(Runtime *runtime, Parallel *thread) override;
 
  private:
+};
+
+class Store : public AstStatement {
+ public:
+  Store(string id, string db_name);
+  void run(Runtime *runtime, Parallel *thread);
+
+ private:
+  string _id;
+  string _name;
+};
+
+class Load : public AstStatement {
+ public:
+  Load(string id, string db_name);
+  void run(Runtime *runtime, Parallel *thread);
+
+ private:
+  string _id;
+  string _name;
 };

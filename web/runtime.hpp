@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-19 17:31:12
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-22 21:38:41
+ * @LastEditTime: 2021-12-23 11:18:00
  */
 
 #pragma once
@@ -64,7 +64,6 @@ class Context {
   std::string _block;
   size_t _line;
   statments_table::iterator _code;
-  std::stack<size_t> _loop_stack;
 
  private:
 };

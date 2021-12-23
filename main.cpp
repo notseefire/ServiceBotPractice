@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 10:30:36
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-23 10:42:37
+ * @LastEditTime: 2021-12-23 12:07:50
  */
 #include <iostream>
 
@@ -18,6 +18,9 @@ int main(int argc, char** argv) {
   fs::path path(
       "/home/cyks/Documents/2021Fall/Homework/Program/assginment/"
       "example_scripts/course");
+
+  fs::path db_path(
+      "/home/cyks/Documents/2021Fall/Homework/Program/assginment/db/course");
   auto p = std::make_shared<ScriptManager>(ScriptManager(path));
   LookupTableFactory factory;
   try {
@@ -27,7 +30,8 @@ int main(int argc, char** argv) {
     auto token_streams = l.lex(*p);
     Parser parser;
     auto token_table = parser.parser(token_streams);
-    for (auto index = token_table.begin(); index != token_table.end(); index++) {
+    for (auto index = token_table.begin(); index != token_table.end();
+         index++) {
       std::cout << index->first << std::endl;
     }
     httplib::Client temp("http://127.0.0.1:5700");
@@ -36,9 +40,9 @@ int main(int argc, char** argv) {
     params.emplace("user_id", std::to_string(370797515ll));
     params.emplace("message", "服务器已启动");
     auto res = temp.Post("/send_msg", params);
-    MainServer server(token_table);
+    MainServer server(token_table, db_path);
     server.run();
-  } catch(const char* msg) {
+  } catch (const char* msg) {
     BOOST_LOG_TRIVIAL(error) << msg;
   }
 }

@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-04 21:06:27
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 19:46:10
+ * @LastEditTime: 2021-12-23 12:15:13
  */
 
 #include <thread>
@@ -20,6 +20,9 @@ TEST(Web, Regular) {
   fs::path path(
       "/home/cyks/Documents/2021Fall/Homework/Program/assginment/"
       "example_scripts/regular");
+
+  fs::path db_path(
+      "/home/cyks/Documents/2021Fall/Homework/Program/assginment/db/regular");
   auto p = std::make_shared<ScriptManager>(ScriptManager(path));
   LookupTableFactory factory;
   auto keywords = factory.get_keyword_table();
@@ -33,8 +36,8 @@ TEST(Web, Regular) {
       "/home/cyks/Documents/2021Fall/Homework/Program/assginment/test_message/"
       "regular",
       logging::trivial::trace);
-  std::thread server([token_table]() {
-    MainServer server(token_table);
+  std::thread server([token_table, db_path]() {
+    MainServer server(token_table, db_path);
     server.run();
   });
   test_server.run(1);
@@ -46,6 +49,8 @@ TEST(Web, Echo) {
   fs::path path(
       "/home/cyks/Documents/2021Fall/Homework/Program/assginment/"
       "example_scripts/echo");
+  fs::path db_path(
+      "/home/cyks/Documents/2021Fall/Homework/Program/assginment/db/echo");
   auto p = std::make_shared<ScriptManager>(ScriptManager(path));
   LookupTableFactory factory;
   auto keywords = factory.get_keyword_table();
@@ -59,8 +64,8 @@ TEST(Web, Echo) {
       "/home/cyks/Documents/2021Fall/Homework/Program/assginment/test_message/"
       "echo",
       logging::trivial::trace);
-  std::thread server([token_table]() {
-    MainServer server(token_table);
+  std::thread server([token_table, db_path]() {
+    MainServer server(token_table, db_path);
     server.run();
   });
   test_server.run(1);
@@ -72,6 +77,8 @@ TEST(Web, Wait) {
   fs::path path(
       "/home/cyks/Documents/2021Fall/Homework/Program/assginment/"
       "example_scripts/wait_timeout");
+  fs::path db_path(
+      "/home/cyks/Documents/2021Fall/Homework/Program/assginment/db/wait_timeout");
   auto p = std::make_shared<ScriptManager>(ScriptManager(path));
   LookupTableFactory factory;
   auto keywords = factory.get_keyword_table();
@@ -86,8 +93,8 @@ TEST(Web, Wait) {
       "wait_timeout",
       logging::trivial::trace);
   
-  std::thread server([token_table]() {
-    MainServer server(token_table);
+  std::thread server([token_table, db_path]() {
+    MainServer server(token_table, db_path);
     server.run();
   });
 
@@ -100,6 +107,8 @@ TEST(Web, Company) {
   fs::path path(
       "/home/cyks/Documents/2021Fall/Homework/Program/assginment/"
       "example_scripts/company");
+  fs::path db_path(
+      "/home/cyks/Documents/2021Fall/Homework/Program/assginment/db/company");
   auto p = std::make_shared<ScriptManager>(ScriptManager(path));
   LookupTableFactory factory;
   auto keywords = factory.get_keyword_table();
@@ -114,8 +123,8 @@ TEST(Web, Company) {
       "company",
       logging::trivial::trace);
   
-  std::thread server([token_table]() {
-    MainServer server(token_table);
+  std::thread server([token_table, db_path]() {
+    MainServer server(token_table, db_path);
     server.run();
   });
 

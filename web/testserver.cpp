@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-19 12:02:54
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 15:41:01
+ * @LastEditTime: 2021-12-23 13:15:45
  */
 
 #include "testserver.hpp"
@@ -55,7 +55,7 @@ TestServer::TestServer(fs::path path, logging::trivial::severity_level level)
                     qq_id id = stoi(rep.get_param_value("user_id"));
                     std::string msg = rep.get_param_value("message");
 
-                    BOOST_LOG_TRIVIAL(trace)
+                    BOOST_LOG_TRIVIAL(info)
                         << boost::format("message %1% to %2%") % msg % id;
                   });
 
@@ -85,7 +85,9 @@ TestServer::TestServer(fs::path path, logging::trivial::severity_level level)
             user << "user_id" << id;
             o << "sender" << user;
 
+            BOOST_LOG_TRIVIAL(info) << id << "send " << index;
             cli.Post("/", o.json(), "application/json");
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
           }
         }));
       }

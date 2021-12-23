@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-11 14:43:02
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-23 10:23:58
+ * @LastEditTime: 2021-12-23 12:07:26
  */
 
 #include "token.hpp"
@@ -193,6 +193,55 @@ Other *Block::find_other(Lexer::token_stream::iterator &begin,
   return new Other(id);
 }
 
+Load *Block::find_load(Lexer::token_stream::iterator &begin,
+                     const Lexer::token_stream::iterator &end) const {
+  string id;
+  string init;
+  if (begin == end || !begin->is_identifier()) {
+    throw "expected identifier";
+  }
+
+  id = begin->get_id()._value;
+  begin++;
+
+  if (begin == end) {
+    throw "expect data name";
+  }
+  if (!(begin->is_string())) {
+    throw "expect data name";
+  }
+
+  init = begin->get_string();
+  begin++;
+
+  return new Load(id, init);
+}
+
+Store *Block::find_store(Lexer::token_stream::iterator &begin,
+                     const Lexer::token_stream::iterator &end) const {
+  string id;
+  string init;
+  if (begin == end || !begin->is_identifier()) {
+    throw "expected identifier";
+  }
+
+  id = begin->get_id()._value;
+  begin++;
+
+  if (begin == end) {
+    throw "expect data name";
+  }
+  if (!(begin->is_string())) {
+    throw "expect data name";
+  }
+
+  init = begin->get_string();
+  begin++;
+
+  return new Store(id, init);
+}
+
+
 Block::Block(std::string name, Lexer::token_stream::iterator begin,
              Lexer::token_stream::iterator end) {
   size_t line = 0;
@@ -279,7 +328,17 @@ Block::Block(std::string name, Lexer::token_stream::iterator begin,
           _stmts.push_back(find_other(begin, end));
 
           break;
+        case reserved_token::LOAD:
+          begin++;
+          _stmts.push_back(find_load(begin, end));
 
+          break;
+
+        case reserved_token::STORE:
+          begin++;
+          _stmts.push_back(find_store(begin, end));
+
+          break;
         default:
           std::cout << static_cast<int>(token) << std::endl;
           throw "unexpected token";

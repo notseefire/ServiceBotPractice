@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-19 17:31:16
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-22 21:39:24
+ * @LastEditTime: 2021-12-23 12:44:19
  */
 
 #include "runtime.hpp"
@@ -66,6 +66,7 @@ Runtime::Runtime(statments_table* p_table) : _p_table(p_table) {
 }
 
 void Runtime::jump(std::string block_name) {
+  if(block_name == "null") return;
   _stack.push(current);
   auto it = _p_table->find(std::string(block_name));
   if (it == _p_table->end()) {

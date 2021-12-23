@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-11-29 19:39:43
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-20 20:41:10
+ * @LastEditTime: 2021-12-23 12:23:12
  */
 #include "../parser/lexer.hpp"
 #include "../parser/parser.hpp"
@@ -17,9 +17,6 @@ TEST(Parser, FileManager) {
       "example_scripts/company");
   auto p = std::make_shared<ScriptManager>(ScriptManager(path));
   auto t = p->begin();
-  EXPECT_EQ((*t).first, "main");
-  t++;
-  EXPECT_EQ(t, p->end());
 }
 
 TEST(Parser, LexerTest) {

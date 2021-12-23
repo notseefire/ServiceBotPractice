@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-04 20:14:40
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-23 10:29:34
+ * @LastEditTime: 2021-12-23 12:11:23
  */
 #include "parallel.hpp"
 
@@ -17,11 +17,12 @@
 #include "mainserver.hpp"
 
 Parallel::Parallel(QMessageQueue* queue, qq_id id, statments_table* p_table,
-                   Runtime* runtime)
+                   Runtime* runtime, jsonxx::Object obj)
     : _p_table(p_table),
       _queue(queue),
       _id(id),
       _runtime(runtime),
+      _db(obj),
       _thread(&Parallel::run, this) {
   _thread.detach();
 }

@@ -4,7 +4,7 @@
  * @Author: CYKS
  * @Date: 2021-12-19 20:00:59
  * @LastEditors: CYKS
- * @LastEditTime: 2021-12-23 10:14:10
+ * @LastEditTime: 2021-12-23 12:53:55
  */
 
 #include "statment.hpp"
@@ -202,4 +202,41 @@ void LoopEnd::run(Runtime *runtime, Parallel *thread) {
     current._line = get_target();
   }
   current.pop_scope();
+}
+
+Store::Store(string id, string db_name) : _id(id), _name(db_name) {
+  BOOST_LOG_TRIVIAL(trace) << "store(" << id <<  ", " << db_name << ")";
+}
+
+void Store::run(Runtime *runtime, Parallel *thread) {
+  Context &current = runtime->current;
+  auto it = current.find_variable(_id);
+  if (!it.has_value()) {
+    BOOST_LOG_TRIVIAL(error) << "the variable " << _id << " have not declared";
+    runtime->end = true;
+    return;
+  } else {
+    thread->_db << _name << it.value()->second;
+  }
+}
+
+Load::Load(string id, string db_name) : _id(id), _name(db_name) {
+  BOOST_LOG_TRIVIAL(trace) << "load(" << id << ", " << db_name << ")";
+}
+
+void Load::run(Runtime *runtime, Parallel *thread) {
+  Context &current = runtime->current;
+  auto it = current.find_variable(_id);
+  if (!it.has_value()) {
+    BOOST_LOG_TRIVIAL(error) << "the variable " << _id << " have not declared";
+    runtime->end = true;
+    return;
+  } else {
+    if(thread->_db.has<jsonxx::String>(_name)) {
+      it.value()->second = thread->_db.get<jsonxx::String>(_name);
+    } else {
+      thread->send_private_msg("数据库中没有信息:" + _name);
+      current._line = current._code->second.size();
+    }
+  }
 }

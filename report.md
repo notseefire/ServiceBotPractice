@@ -38,31 +38,72 @@
 
 ```shell
 
-echo {expression}/{id} 回复消息
+echo {expression} 回复消息
 set {id} [= string] 设置变量名及变量值
 input {id} [wait {number}] 等待用户输入消息，并将消息内容储存在变量中
-assign {id} = {string} 修改变量的值
+assign {id} = {expression} 修改变量的值
 call {id} = {string} {proc_id} 调用过程proc_id
-break 结束执行
+loop endloop 循环体
+break 结束循环的运行
+其中，expression指的是这样的语法结构
+expression = {id|string} [..[+ {id|string}]]
 ```
 
 使用这套`DSL` 实现U公司的需求可以使用以下脚本
 
 ```shell
 proc main:
-	echo "你好"
+	set greet
+	input greet
+
+	echo "输入启动开始服务"
+	call greet = "启动" begin
+
+proc begin:
+	echo "帮助:
+  输入退款启动退款服务
+  输入工单购买商品
+  输入退出可关闭服务"
 	set function
-	
-	input function wait 5
-	call function = "退款" refund
-	call function = "工单" order
-	
+	loop
+		input function wait 30
+		call function = "退款" refund
+		call function = "工单" order
+		call function = "" silence
+		call function = "退出" out
+		other wrong
+	endloop
 	echo "再见"
+
+proc out:
+	echo "系统将退出"
+
+proc silence:
+	echo "没有接收到输入，将自动退出"
+
+proc wrong:
+	echo "输入了未知的功能，请重新输入"
 	
 proc refund:
-	
+	set item
+	set number
+	echo "请输入退款的商品"
+	input item
+	echo "请输入退款商品的数量"
+	input number
+	echo "记录:退款" + number + "个" + item 
+	echo "请等待工作人员核实"
 	
 proc order:
+	set item
+	set number
+	echo "输入购买的商品"
+	input item
+	echo "输入购买商品的数量"
+	input number
+	assign number = number + "个" + item
+	echo "记录:购买" + number 
+	echo "请等待工作人员核实"
 ```
 
 ## 顶层设计
@@ -77,15 +118,11 @@ Parser的功能为解释设计的DSL语言，生成可执行代码，符号表�
 
 
 
-### VirtualMachine
-
-​	虚拟机的功能类似于 `JVM` 虚拟机，运行`Paser` 解释的结果，并保存`Paser`中的符号表，同时具有`pc`寄存器，用于保存目前运行的结果，并且具有多用户支持的功能
-
-
-
 ### Web 
 
-​	实现了请求与响应`Mirai`服务器的功能。使用 `boost.asio` 库实现，同时使用 `jsonxx` 库进行 `json` 的逆序列化。
+​	实现了请求与响应`Mirai`服务器的功能。使用 `cpp-httplib` 库实现，同时使用 `jsonxx` 库进行 `json` 的逆序列化。
+
+​	实现了 `Runtime` 子模块，该模块具有运行`Parser `编译完成后`AST`的能力
 
 
 
@@ -93,13 +130,13 @@ Parser的功能为解释设计的DSL语言，生成可执行代码，符号表�
 
 ​	日志功能，该模块主要在 `CLI` 环境下交互，以及产生日志文件
 
-​	日志信息包括：`Paser` 的编译错误信息， `VirtualMachine` 的日志信息，使用了 `Boost` 的`log`组件实现.
+​	日志信息包括：`Paser` 的编译错误信息， `Runtime` 的日志信息，使用了 `Boost` 的`log`组件实现.
 
 
 
 ### 外部Web框架
 
-​	该模块使用了 `Mirai` 框架提供的 Web 服务器， 该 Web 服务器实现了使用设备配置文件登陆 QQ ，在 OICQ 协议下工作，可以向监听服务器的地址发送 `Json` 消息
+​	`Mirai` 是一个第三方程序，该模块使用了 `Mirai` 框架提供的 Web 服务器， 该 Web 服务器实现了使用设备配置文件登陆 QQ ，可以向POST上报地址发送 `Json` 格式的消息
 
 
 
@@ -107,9 +144,11 @@ Parser的功能为解释设计的DSL语言，生成可执行代码，符号表�
 
 ### Parser
 
-​	根据之前设计的Notation，接下来要利用已有的Compiler Principle的知识，设计解释器。首先是Token的设计，我们可以将 Token 分为`string` ，`identifier`, `reserved_token`。
+#### Token
 
-#### Reserved_token
+
+
+​	根据之前设计的Notation，接下来要利用已有的Compiler Principle的知识，设计解释器。首先是Token的设计，我们可以将 Token 分为`string` ，`identifier`, `reserved_token`，`int`。
 
 ​	`reserved_token` 表示Parser保留的关键字，可以通过在 `lookup_table` 中查询得到
 
@@ -143,5 +182,77 @@ Parser的功能为解释设计的DSL语言，生成可执行代码，符号表�
 
 为了实现线程间的同步与通信，我们需要使用 C++ 提供的 `std::mutex` 。
 
-并以此来实现一个thread-safe的消息队列
+在该项目中，需要使用到 `std::mutex` 来实现 QQ消息队列，线程管理，释放队列
+
+在使用`mutex`时，C++提供`std::lock_guard<std::mutex>`和`std::unique_lock<std::mutex>`方法，前者可以方便向`mutex`申请锁，后者则是申请一个`movable`的锁，可以从函数中返回
+
+#### 线程管理
+
+线程管理功能主要包含线程的创建以及线程的退出
+
+相关的数据结构为
+
+```cpp
+
+std::map<qq_id, Parallel*> thread_pool;
+std::mutex free_mutex;
+std::queue<Parallel *> free_queue;
+std::mutex thread_pool_mutex;
+class QMessageQueue
+```
+
+​	`Parallel` 近似于一个进程，当实例化一个`Parallel`时，`Parallel`会自动创建一个线程，该线程可以使用`Parallel`提供的资源运行`AST`
+
+
+
+​	`thread_pool` 是检测`qq_id`是否有对应线程的数据结构，当一个`qq_id`已经在线程中时，就不需要创建新的线程，而是将消息放入对应线程的消息队列中。其他线程与主线程对`thread_pool`是互斥访问的，需要使用`thread_pool_mutex`管理互斥访问
+
+​	`free_queue` 指的是需要被释放`Parallel`的队列，当`Parallel`结束`AST`的执行后，会执行将自己从`thread_pool`中删除的命令，同时将自己放入到释放队列中。控制释放队列的是一个主线程在初始化时创建的线程，该线程每隔50ms会检查一次释放队列中是否有新的元素，如果有则全部释放。 所以释放线程与其他线程是互斥访问的，所以还需要添加`free_mutex`进行进程间的同步。	
+
+​	`Parallel`管理的资源为 `std::thread` `qq_id` `QMessageQueue`  `Runtime` `statments_table` 
+
+​	`QMessageQueue`实现了管理消息的最小单位，显示地提供了队列方法
+
+```cpp
+std::optional<QMessage> pop(int micro_seconds);
+void push(QMessage msg);
+```
+
+`pop`中封装了 `wait_data` 方法，当等待 `micro_seconds`后消息队列仍然为空，该方法返回`std::nullopt`
+
+`wait_data`中同时封装了互斥锁和等待循环, `wait_data` 每100ms检查一次队列，注意等待期间锁是被释放的。
+
+`push`中封装了`get_lock`方法，调用该方法会自动向`_mutex`申请锁，然后将消息放入到队列中
+
+#### Runtime
+
+实现`Runtime`需要额外两种结构`Context`和`AstStatment`
+
+```cpp
+ virtual void run(Runtime* runtime, Parallel* thread) = 0;
+ void set_target(size_t target);
+ size_t get_target();
+```
+
+`AstStatment`封装了执行代码的接口，所有可执行代码都需要实现这个虚类接口。
+
+`run`是运行`Ast`的最小单位，包含的功能仅限于执行一个指令，并且提供了执行指令时需要的`Runtime`和`Parallel`信息，`Runtime`负责获取当前的`Context`，`Parallel`负责服务器需要的系统调用
+
+`set_target`和`get_target`则提供了实现跳转指令时有用的信息，`target`的设置在`Parser`阶段就应该完成
+
+`Context`封装了一个函数中的符号表作用域，并且具有指向代码段的指针，和保存当前代码运行到的区域。在调用函数成功时创建`Context`
+
+`Runtime`封装了当前运行到`Context`和`Context`栈，全局代码段，即不同函数的代码段，用于创建`Context`实例，当运行完一个`Context`时，`Runtime`会弹出当前运行到的`Context`并且装载下一个`Context`
+
+
+
+
+
+
+
+
+
+
+
+
 
